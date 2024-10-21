@@ -9,7 +9,6 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import packet.UDPStreamPacket;
 
 
@@ -23,36 +22,49 @@ public class GroupCarrier{
     private static final int SOCKET_RECEIVE_TIMEOUT = 2000;
     private static final int ASSUMES_LOST_CONNECTION = 10000;
 
+    private int groupCounter;
     private DatagramSocket socket;
     private InetSocketAddress inetSocketAddress;
 
 
     GroupCarrier(DatagramSocket socket, InetSocketAddress inetSocketAddress){
         this.socket = socket;
+        this.groupCounter = 0;
         this.inetSocketAddress = inetSocketAddress;
+    }
+
+
+    public int getGroupCounter(){
+        return this.groupCounter;
     }
 
 
     public void close(){
         this.socket.close();
+        this.groupCounter = 0;
     }
 
 
-    public List<UDPStreamPacket> getGroup(InputStream inputStream, int groupID) throws IOException{
+    public void nextGroup(){
+        this.groupCounter++;
+    }
+
+
+    public List<UDPStreamPacket> getGroup(InputStream inputStream) throws IOException{
 
         int bytes_read;
         byte[] payload = new byte[PAYLOAD_SIZE];
         List<UDPStreamPacket> group = new ArrayList<>();
 
         for (int index = 0; index < GROUP_SIZE && (bytes_read = inputStream.read(payload)) > 0; index++){
-            group.add(new UDPStreamPacket(groupID,index,payload,bytes_read));
+            group.add(new UDPStreamPacket(this.groupCounter,index,payload,bytes_read));
         }
 
         return group;
     }
 
 
-    public void sendGroup(List<UDPStreamPacket> group, int groupID) throws IOException{
+    public void sendGroup(List<UDPStreamPacket> group) throws IOException{
 
         List<Boolean> acks = new ArrayList<>(Collections.nCopies(group.size(),false));        
         DatagramPacket ackPacket = new DatagramPacket(new byte[BUFFER_SIZE],BUFFER_SIZE);
@@ -76,7 +88,7 @@ public class GroupCarrier{
                     UDPStreamPacket udpPacket = UDPStreamPacket.deserialize(ackPacket.getData());
                     lastAck = System.currentTimeMillis();
 
-                    if (udpPacket.getGroup() == groupID){
+                    if (udpPacket.getGroup() == this.groupCounter){
                         acks.set(udpPacket.getSeqNum(),true);
                         condition = acks.stream().anyMatch(x -> x == false);
                     }
@@ -92,7 +104,7 @@ public class GroupCarrier{
     }
 
 
-    public List<UDPStreamPacket> receiveGroup(int groupID) throws SocketException{
+    public List<UDPStreamPacket> receiveGroup() throws SocketException{
 
         List<UDPStreamPacket> group = new ArrayList<>();
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE],BUFFER_SIZE);
@@ -107,7 +119,7 @@ public class GroupCarrier{
                 this.socket.receive(receivePacket);
                 UDPStreamPacket updPacket = UDPStreamPacket.deserialize(receivePacket.getData());
 
-                if (updPacket.getGroup() != groupID){
+                if (updPacket.getGroup() != this.groupCounter){
                     break;
                 }
 
