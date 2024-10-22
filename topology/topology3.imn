@@ -440,11 +440,15 @@ node n19 {
 }
 
 link l1 {
+    width 8
+    color Blue
     nodes {n1 n2}
     bandwidth 0
 }
 
 link l2 {
+    width 8
+    color Blue
     nodes {n1 n3}
     bandwidth 0
 }
@@ -485,6 +489,8 @@ link l18 {
 }
 
 link l3 {
+    width 8
+    color Blue
     nodes {n3 n5}
     bandwidth 0
 }
@@ -495,21 +501,29 @@ link l4 {
 }
 
 link l5 {
+    width 8
+    color Blue
     nodes {n6 n10}
     bandwidth 0
 }
 
 link l6 {
+    width 8
+    color Blue
     nodes {n6 n8}
     bandwidth 0
 }
 
 link l7 {
+    width 8
+    color Blue
     nodes {n2 n18}
     bandwidth 0
 }
 
 link l8 {
+    width 8
+    color Blue
     nodes {n18 n9}
     bandwidth 0
 }
@@ -520,6 +534,8 @@ link l9 {
 }
 
 link l11 {
+    width 8
+    color Blue
     nodes {n4 n17}
     bandwidth 0
 }
@@ -530,26 +546,36 @@ link l19 {
 }
 
 link l20 {
+    width 8
+    color Blue
     nodes {n7 n19}
     bandwidth 0
 }
 
 link l21 {
+    width 8
+    color Blue
     nodes {n19 n4}
     bandwidth 0
 }
 
 link l10 {
+    width 8
+    color Blue
     nodes {n17 n8}
     bandwidth 0
 }
 
 link l22 {
+    width 8
+    color Blue
     nodes {n5 n17}
     bandwidth 0
 }
 
 link l23 {
+    width 8
+    color Blue
     nodes {n3 n6}
     bandwidth 0
 }
