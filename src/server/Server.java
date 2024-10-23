@@ -28,5 +28,6 @@ public class Server {
         JSONObject response_json = response.getJsonObject();
         JSONArray neighbours = response_json .getJSONArray("neighbours");
         System.out.println(neighbours);
+        socket.close();
     }
 }
