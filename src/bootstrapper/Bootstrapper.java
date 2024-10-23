@@ -16,7 +16,7 @@ public class Bootstrapper{
 
     public static void main(String args[]) throws IOException, InterruptedException{
 
-        String json_content = new String(Files.readAllBytes(Paths.get("data.json")));
+        String json_content = new String(Files.readAllBytes(Paths.get("config/" + args[0])));
         JSONObject jsonObject = new JSONObject(json_content);
         int expected_clients = jsonObject.getInt("number_of_nodes");
 

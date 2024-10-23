@@ -1,6 +1,9 @@
 package packet.tcp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -50,8 +53,9 @@ public class TCPNodeInfo{
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(TCPNodeInfo.class);
-        kryo.register(JSONObject.class);
-        kryo.writeObject(output,this);
+        kryo.writeObject(output, this.node);
+        String jsonString = jsonObject.toString();
+        kryo.writeObject(output,jsonString);
 
         output.flush();
         output.close();
@@ -67,9 +71,10 @@ public class TCPNodeInfo{
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(TCPNodeInfo.class);
-        kryo.register(JSONObject.class);
-
-        TCPNodeInfo udp_packet = kryo.readObject(input,TCPNodeInfo.class);
+        String node = kryo.readObject(input, String.class);
+        String jsonString = kryo.readObject(input, String.class);
+        JSONObject jsonObject = new JSONObject(jsonString);
+        TCPNodeInfo udp_packet = new TCPNodeInfo(node,jsonObject);
         input.close();
 
         return udp_packet;
