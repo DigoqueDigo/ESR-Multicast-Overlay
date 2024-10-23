@@ -1,4 +1,4 @@
-package streaming;
+package carrier;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramPacket;
@@ -9,10 +9,10 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import packet.UDPStreamPacket;
+import packet.udp.UDPStreamPacket;
 
 
-public class GroupCarrier{
+public class UDPGroupCarrier{
 
     private static final int PAYLOAD_SIZE = 4096;
     private static final int BUFFER_SIZE = 5000;
@@ -27,7 +27,7 @@ public class GroupCarrier{
     private InetSocketAddress inetSocketAddress;
 
 
-    GroupCarrier(DatagramSocket socket, InetSocketAddress inetSocketAddress){
+    UDPGroupCarrier(DatagramSocket socket, InetSocketAddress inetSocketAddress){
         this.socket = socket;
         this.groupCounter = 0;
         this.inetSocketAddress = inetSocketAddress;
@@ -66,7 +66,7 @@ public class GroupCarrier{
 
     public void sendGroup(List<UDPStreamPacket> group) throws IOException{
 
-        List<Boolean> acks = new ArrayList<>(Collections.nCopies(group.size(),false));        
+        List<Boolean> acks = new ArrayList<>(Collections.nCopies(group.size(),false));
         DatagramPacket ackPacket = new DatagramPacket(new byte[BUFFER_SIZE],BUFFER_SIZE);
         DatagramPacket sendPacket = new DatagramPacket(new byte[BUFFER_SIZE],BUFFER_SIZE,this.inetSocketAddress);
 

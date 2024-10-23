@@ -1,24 +1,24 @@
-package streaming;
+package carrier;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.List;
-import packet.UDPStreamPacket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import packet.udp.UDPStreamPacket;
 
 
-public class Carrier{
+public class UDPCarrier{
 
 
-    public Carrier(){}
+    public UDPCarrier(){}
 
 
     public void send(InputStream inputStream, InetSocketAddress socketAddress) throws SocketException, IOException{
 
         DatagramSocket socket = new DatagramSocket();
-        GroupCarrier groupCarrier = new GroupCarrier(socket,socketAddress);
+        UDPGroupCarrier groupCarrier = new UDPGroupCarrier(socket,socketAddress);
         List<UDPStreamPacket> group = groupCarrier.getGroup(inputStream);
 
         while (group.size() > 0){
@@ -35,7 +35,7 @@ public class Carrier{
     public void receive(OutputStream outputStream, InetSocketAddress socketAddress) throws SocketException, IOException{
 
         DatagramSocket socket = new DatagramSocket(socketAddress.getPort());
-        GroupCarrier groupCarrier = new GroupCarrier(socket,socketAddress);
+        UDPGroupCarrier groupCarrier = new UDPGroupCarrier(socket,socketAddress);
         List<UDPStreamPacket> group = groupCarrier.receiveGroup();
 
         while (group.size() > 0){
@@ -50,6 +50,6 @@ public class Carrier{
             group = groupCarrier.receiveGroup();
         }
 
-        groupCarrier.close();     
+        groupCarrier.close();
     }
 }

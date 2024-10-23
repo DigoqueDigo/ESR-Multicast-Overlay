@@ -1,4 +1,4 @@
-package packet;
+package packet.udp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class UDPStreamPacket implements Comparable<UDPStreamPacket>{
         return this.group;
     }
 
-    
+
     public int getSeqNum(){
         return this.seq_num;
     }

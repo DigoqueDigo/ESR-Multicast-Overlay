@@ -1,6 +1,6 @@
 import java.io.FileOutputStream;
 import java.net.InetSocketAddress;
-import streaming.Carrier;
+import carrier.UDPCarrier;
 
 
 public class UDPClient{
@@ -12,7 +12,7 @@ public class UDPClient{
 
         FileOutputStream fileOutputStream = new FileOutputStream(args[0]);
         InetSocketAddress inetSocketAddress = new InetSocketAddress(UDP_ADDRESS,UDP_PORT);
-        Carrier carrier = new Carrier();
+        UDPCarrier carrier = new UDPCarrier();
 
         carrier.receive(fileOutputStream,inetSocketAddress);
         fileOutputStream.close();
