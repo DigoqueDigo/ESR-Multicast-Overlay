@@ -4,9 +4,22 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import packet.tcp.TCPNodeInfo;
+import packet.tcp.TCPPacket;
+import packet.tcp.TCPPacket.TYPE;
 
 
 public class TCPCarrier{
+
+    private static Map<TYPE,Function<byte[],TCPPacket>> deserializeMap = new HashMap<>();
+
+    static{
+        // Adicionar um metodo de deserialize por extensao de TCPPacket
+        deserializeMap.put(TYPE.NODEINFO, x -> TCPNodeInfo.deserialize(x));
+    }
 
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
@@ -18,15 +31,18 @@ public class TCPCarrier{
     }
 
 
-    public void send(byte[] data) throws IOException{
+    public void send(TCPPacket tcpPacket) throws IOException{
+        byte[] data = tcpPacket.serialize();
+        this.dataOutputStream.writeUTF(tcpPacket.getType().name());
         this.dataOutputStream.writeInt(data.length);
         this.dataOutputStream.write(data);
         this.dataOutputStream.flush();
     }
 
 
-    public byte[] receive() throws IOException{
+    public TCPPacket receive() throws IOException{
 
+        TYPE type = TYPE.valueOf(this.dataInputStream.readUTF());
         int data_size = this.dataInputStream.readInt();
         byte data[] = new byte[data_size];
 
@@ -34,7 +50,7 @@ public class TCPCarrier{
             throw new IOException("TCP packet reading incomplete");
         }
 
-        return data;
+        return deserializeMap.get(type).apply(data);
     }
 
 

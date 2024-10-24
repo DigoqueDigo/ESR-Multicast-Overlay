@@ -11,20 +11,20 @@ import org.json.JSONObject;
 
 public class Bootstrapper{
 
-    private static final int PORT = 12345;
+    private static final int PORT = 3000;
 
 
     public static void main(String args[]) throws IOException, InterruptedException{
 
         String json_content = new String(Files.readAllBytes(Paths.get("config/" + args[0])));
         JSONObject jsonObject = new JSONObject(json_content);
-        int expected_clients = jsonObject.getInt("number_of_nodes");
+        int expected_clients = jsonObject.length();
 
         Socket socket;
         ServerSocket serverSocket = new ServerSocket(PORT);
         List<Thread> workers = new ArrayList<>();
 
-        while ((socket = serverSocket.accept()) != null && expected_clients > 0){
+        while (expected_clients > 0 && (socket = serverSocket.accept()) != null){
             Thread worker = new Thread(new BootstrapperWorker(socket,jsonObject));
             workers.add(worker);
             worker.start();

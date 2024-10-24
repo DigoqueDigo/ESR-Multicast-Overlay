@@ -26,11 +26,11 @@ public class BootstrapperWorker implements Runnable{
 
         try{
 
-            TCPNodeInfo tcpNodeInfo = TCPNodeInfo.deserialize(this.tcpCarrier.receive());
+            TCPNodeInfo tcpNodeInfo = (TCPNodeInfo) this.tcpCarrier.receive();
             JSONObject content = this.jsonObject.getJSONObject(tcpNodeInfo.getNode());
 
             tcpNodeInfo.setJsonObject(content);
-            this.tcpCarrier.send(tcpNodeInfo.serialize());
+            this.tcpCarrier.send(tcpNodeInfo);
             this.socket.close();
         }
 

@@ -16,8 +16,9 @@ Empacotar o código compilado num arquivo `JAR`
 ```
 mvn package
 ```
-Executar a class `foo` e passar-lhe o argumento `goo`
 
+Executar classes do programa
 ```
-mvn exec:java -Dexec.mainClass="foo" -Dexec.args="goo"
+mvn exec:java -Dexec.mainClass="bootstrapper.Bootstrapper" -Dexec.args="<config.json>"
+mvn exec:java -Dexec.mainClass="server.Server" -Dexec.args="<nodename> <bootstrapper_IP> <bootstrapper_PORT>"
 ```
