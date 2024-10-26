@@ -1,4 +1,4 @@
-package server;
+package client;
 import java.io.IOException;
 import java.net.Socket;
 import bootstrapper.Bootstrapper;
@@ -6,7 +6,7 @@ import carrier.TCPCarrier;
 import packet.tcp.TCPNodeInfo;
 
 
-public class Server {
+public class Client {
 
     public static void main(String[] args) throws InterruptedException, IOException{
 

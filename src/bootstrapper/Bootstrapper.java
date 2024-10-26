@@ -11,8 +11,7 @@ import org.json.JSONObject;
 
 public class Bootstrapper{
 
-    private static final int PORT = 3000;
-
+    public static final int PORT = 3000;
 
     public static void main(String args[]) throws IOException, InterruptedException{
 

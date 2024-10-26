@@ -20,5 +20,6 @@ mvn package
 Executar classes do programa
 ```
 mvn exec:java -Dexec.mainClass="bootstrapper.Bootstrapper" -Dexec.args="<config.json>"
-mvn exec:java -Dexec.mainClass="server.Server" -Dexec.args="<nodename> <bootstrapper_IP> <bootstrapper_PORT>"
+mvn exec:java -Dexec.mainClass="server.Server" -Dexec.args="<nodename> <bootstrapper_IP>"
+mvn exec:java -Dexec.mainClass="client.Client" -Dexec.args="<nodename> <bootstrapper_IP>"
 ```
