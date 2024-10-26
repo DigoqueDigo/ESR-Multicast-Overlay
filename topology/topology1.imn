@@ -179,21 +179,21 @@ link l3 {
 
 link l4 {
     width 8
-    color Blue
+    color Cyan
     nodes {n2 n1}
     bandwidth 0
 }
 
 link l5 {
     width 8
-    color Blue
+    color Cyan
     nodes {n1 n5}
     bandwidth 0
 }
 
 link l6 {
     width 8
-    color Blue
+    color Cyan
     nodes {n5 n3}
     bandwidth 0
 }
@@ -206,8 +206,8 @@ link l7 {
 }
 
 link l9 {
-    width 2
-    color Red
+    width 8
+    color Cyan
     nodes {n3 n2}
     bandwidth 0
 }
