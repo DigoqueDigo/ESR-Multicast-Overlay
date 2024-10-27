@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.Socket;
 import org.json.JSONObject;
 import carrier.TCPCarrier;
-import packet.tcp.TCPNodeInfo;
+import packet.tcp.TCPBootstrapperPacket;
 
 
 public class BootstrapperWorker implements Runnable{
@@ -26,11 +26,11 @@ public class BootstrapperWorker implements Runnable{
 
         try{
 
-            TCPNodeInfo tcpNodeInfo = (TCPNodeInfo) this.tcpCarrier.receive();
-            JSONObject content = this.jsonObject.getJSONObject(tcpNodeInfo.getNode());
+            TCPBootstrapperPacket tcpBootstrapperPacket = (TCPBootstrapperPacket) this.tcpCarrier.receive();
+            JSONObject content = this.jsonObject.getJSONObject(tcpBootstrapperPacket.getNode());
 
-            tcpNodeInfo.setJsonObject(content);
-            this.tcpCarrier.send(tcpNodeInfo);
+            tcpBootstrapperPacket.setJsonObject(content);
+            this.tcpCarrier.send(tcpBootstrapperPacket);
             this.socket.close();
         }
 

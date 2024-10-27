@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import packet.tcp.TCPNodeInfo;
+import packet.tcp.TCPBootstrapperPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TYPE;
 
@@ -18,7 +18,7 @@ public class TCPCarrier{
 
     static{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
-        deserializeMap.put(TYPE.NODEINFO, x -> TCPNodeInfo.deserialize(x));
+        deserializeMap.put(TYPE.BOOTSTRAPPER, x -> TCPBootstrapperPacket.deserialize(x));
     }
 
     private DataInputStream dataInputStream;

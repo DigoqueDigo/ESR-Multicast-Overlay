@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.net.Socket;
 import bootstrapper.Bootstrapper;
 import carrier.TCPCarrier;
-import packet.tcp.TCPNodeInfo;
+import packet.tcp.TCPBootstrapperPacket;
 
 
 public class Server {
@@ -16,10 +16,10 @@ public class Server {
         Socket socket = new Socket(bootstrapperIP,Bootstrapper.PORT);
         TCPCarrier tcpCarrier = new TCPCarrier(socket.getInputStream(),socket.getOutputStream());
 
-        TCPNodeInfo request = new TCPNodeInfo(nodeName);
+        TCPBootstrapperPacket request = new TCPBootstrapperPacket(nodeName);
         tcpCarrier.send(request);
 
-        TCPNodeInfo response = (TCPNodeInfo) tcpCarrier.receive();
+        TCPBootstrapperPacket response = (TCPBootstrapperPacket) tcpCarrier.receive();
         System.out.println(response.getJsonObject().getJSONArray("neighbours"));
 
         socket.close();

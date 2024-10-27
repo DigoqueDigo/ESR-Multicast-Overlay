@@ -3,7 +3,11 @@ package packet.tcp;
 
 public abstract class TCPPacket{
 
-    public enum TYPE { NODEINFO }
+    public enum TYPE {
+        BOOTSTRAPPER,
+        CONTROL_ESTABLISH_CONNECTION,
+        CONTROL_FLOOD,
+        CONTROL_GRANDFATHER}
 
     private TYPE type;
 
