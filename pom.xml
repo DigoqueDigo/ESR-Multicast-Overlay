@@ -43,6 +43,12 @@
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
+		<!-- para usar circular queue -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
     </dependencies>
 
 </project>
