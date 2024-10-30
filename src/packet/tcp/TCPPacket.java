@@ -11,6 +11,8 @@ public abstract class TCPPacket{
     }
 
     private TYPE type;
+    private String sender;
+    private String receiver;
 
 
     public TCPPacket() {}
@@ -18,6 +20,15 @@ public abstract class TCPPacket{
 
     public TCPPacket(TYPE type){
         this.type = type;
+        this.sender = new String();
+        this.receiver = new String();
+    }
+
+
+    public TCPPacket(TYPE type, String sender, String receiver){
+        this.type = type;
+        this.sender = sender;
+        this.receiver = receiver;
     }
 
 
@@ -26,12 +37,34 @@ public abstract class TCPPacket{
     }
 
 
+    public String getSender(){
+        return this.sender;
+    }
+
+
+    public String getReceiver(){
+        return this.receiver;
+    }
+
+
+    public void setSender(String sender){
+        this.sender = sender;
+    }
+
+
+    public void setReceiver(String receiver){
+        this.receiver = receiver;
+    }
+
+
     public abstract byte[] serialize();
 
 
     public String toString(){
         StringBuilder buffer = new StringBuilder();
-        buffer.append("TYPE: ").append(this.type.name());
+        buffer.append("Type: ").append(this.type.name());
+        buffer.append("\tSender: ").append(this.sender);
+        buffer.append("\tReceiver: ").append(this.receiver);
         return buffer.toString();
     }
 }

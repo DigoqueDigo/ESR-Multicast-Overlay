@@ -7,11 +7,13 @@ import service.core.struct.BoundedBuffer;
 
 public class ConnectionReaderWorker implements Runnable{
 
+    private String interfaceIP;
     private InputStream inputStream;
     private BoundedBuffer<TCPPacket> inBuffer;
 
 
-    public ConnectionReaderWorker(InputStream inputStream, BoundedBuffer<TCPPacket> inBuffer){
+    public ConnectionReaderWorker(String interfaceIP, InputStream inputStream, BoundedBuffer<TCPPacket> inBuffer){
+        this.interfaceIP = interfaceIP;
         this.inputStream = inputStream;
         this.inBuffer = inBuffer;
     }
@@ -25,6 +27,7 @@ public class ConnectionReaderWorker implements Runnable{
             TCPCarrier tcpCarrier = new TCPCarrier(this.inputStream,null);
 
             while ((receivePacket = tcpCarrier.receive()) != null){
+                receivePacket.setReceiver(interfaceIP);
                 this.inBuffer.push(receivePacket);
             }
         }

@@ -7,63 +7,76 @@ import java.io.ByteArrayOutputStream;
 
 
 public class TCPFloodPacket extends TCPPacket {
+    
     private String serverName;
-    //Sender is upstream node that sent this packet to this node
-    private String sender;
     private long timestamp;
 
-    public TCPFloodPacket(String serverName, String sender) {
+
+    public TCPFloodPacket() {}
+
+
+    public TCPFloodPacket(String serverName) {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
-        this.sender = sender;
         this.timestamp = System.nanoTime();
     }
 
-    public TCPFloodPacket(String serverName, String sender, long timestamp) {
+
+    public TCPFloodPacket(String serverName, long timestamp) {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
-        this.sender = sender;
         this.timestamp = timestamp;
     }
 
+
     public long getTimestamp() {
-        return timestamp;
+        return this.timestamp;
     }
 
-    public String getSender() {
-        return sender;
-    }
 
     public String getServerName() {
-        return serverName;
+        return this.serverName;
     }
+
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\tServerName: ").append(this.serverName);
+        buffer.append("\tTimestamp: ").append(this.timestamp);
+        return buffer.toString();
+    }
+
 
     @Override
     public byte[] serialize() {
+
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(TCPEstablishControlConnectionPacket.class);
-        kryo.writeObject(output, this.serverName);
-        kryo.writeObject(output,this.sender);
-        kryo.writeObject(output,this.timestamp);
+        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPFloodPacket.class);
+        kryo.writeObject(output,this);
+
         output.flush();
         output.close();
 
         return byteArrayOutputStream.toByteArray();
     }
 
+
     public static TCPFloodPacket deserialize(byte[] data) {
+
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
+        kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPFloodPacket.class);
-        String serverName = kryo.readObject(input, String.class);
-        String sender = kryo.readObject(input,String.class);
-        long timestamp = kryo.readObject(input, Long.class);
-        TCPFloodPacket packet = new TCPFloodPacket(serverName,sender,timestamp);
+
+        TCPFloodPacket packet = kryo.readObject(input,TCPFloodPacket.class);
         input.close();
 
         return packet;

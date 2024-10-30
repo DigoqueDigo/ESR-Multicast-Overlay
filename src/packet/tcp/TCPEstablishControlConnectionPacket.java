@@ -8,29 +8,37 @@ import java.io.ByteArrayOutputStream;
 
 public class TCPEstablishControlConnectionPacket extends TCPPacket {
 
-    private String sender;
+    private String myIPinterface;
+    private String neighbourIPinterface;
 
     public TCPEstablishControlConnectionPacket() {
         super(TYPE.CONTROL_ESTABLISH_CONNECTION);
     }
 
-    public TCPEstablishControlConnectionPacket(String sender) {
+    public TCPEstablishControlConnectionPacket(String myIPinterface, String neighbourIPInterface) {
         super(TYPE.CONTROL_ESTABLISH_CONNECTION);
-        this.sender = sender;
+        this.myIPinterface = myIPinterface;
+        this.neighbourIPinterface = neighbourIPInterface;
     }
 
-    public String getSender() {
-        return sender;
+    public String getMyIPinterface() {
+        return this.myIPinterface;
+    }
+
+    public String getNeighbourIPinterface() {
+        return this.neighbourIPinterface;
     }
 
     @Override
     public byte[] serialize() {
+
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(TCPEstablishControlConnectionPacket.class);
-        kryo.writeObject(output,this.sender);
+        kryo.writeObject(output,this);
+
         output.flush();
         output.close();
 
@@ -38,13 +46,13 @@ public class TCPEstablishControlConnectionPacket extends TCPPacket {
     }
 
     public static TCPEstablishControlConnectionPacket deserialize(byte[] data) {
+
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(TCPEstablishControlConnectionPacket.class);
-        String sender = kryo.readObject(input,String.class);
-        TCPEstablishControlConnectionPacket packet = new TCPEstablishControlConnectionPacket(sender);
+        TCPEstablishControlConnectionPacket packet = kryo.readObject(input,TCPEstablishControlConnectionPacket.class);
         input.close();
 
         return packet;

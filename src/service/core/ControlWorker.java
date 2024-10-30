@@ -35,7 +35,9 @@ public class ControlWorker implements Runnable{
 
         // Se nunca tiver visto este servertimestamp vou dar flood dele
         if (this.timestampHistory.contains(serverTimeStamp) == false){
-            this.outBuffers.sendToAll(tcpFloodPacket);
+            for (String neighbour : this.outBuffers.getKeys()){
+                this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+            }
         }
 
         // o historico do servertimestamp está sempre a crescer

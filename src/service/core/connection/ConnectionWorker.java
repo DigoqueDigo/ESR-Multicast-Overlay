@@ -1,5 +1,7 @@
 package service.core.connection;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import packet.tcp.TCPPacket;
 import service.core.struct.BoundedBuffer;
@@ -23,8 +25,12 @@ public class ConnectionWorker implements Runnable{
 
         try{
 
-            ConnectionReaderWorker connectionReaderWorker = new ConnectionReaderWorker(this.socket.getInputStream(),this.inBuffer);
-            ConnectionWriterWorker connectionWriterWorker = new ConnectionWriterWorker(this.socket.getOutputStream(),this.outBuffer);
+            InputStream inputStream = this.socket.getInputStream();
+            OutputStream outputStream = this.socket.getOutputStream();
+            String interfaceIP = this.socket.getLocalAddress().getHostAddress();
+
+            ConnectionReaderWorker connectionReaderWorker = new ConnectionReaderWorker(interfaceIP,inputStream,this.inBuffer);
+            ConnectionWriterWorker connectionWriterWorker = new ConnectionWriterWorker(interfaceIP,outputStream,this.outBuffer);
 
             Thread reader = new Thread(connectionReaderWorker);
             Thread writer = new Thread(connectionWriterWorker);

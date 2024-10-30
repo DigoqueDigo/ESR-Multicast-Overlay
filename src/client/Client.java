@@ -12,13 +12,13 @@ public class Client {
 
         String nodeName = args[0];
         String bootstrapperIP = args[1];
-
+        
         BootstrapperGrather bootstrapperGrather = new BootstrapperGrather(nodeName,bootstrapperIP);
         JSONObject bootstrapperInfo = bootstrapperGrather.getBootstrapperInfo();
-
+        
         List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
             .toList().stream().map(Object::toString).collect(Collectors.toList());
-
+        
         System.out.println(neighbours);
     }
 }

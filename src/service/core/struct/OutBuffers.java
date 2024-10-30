@@ -1,4 +1,5 @@
 package service.core.struct;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import packet.tcp.TCPPacket;
@@ -25,10 +26,13 @@ public class OutBuffers{
     }
 
 
-    public void sendToAll(TCPPacket tcpPacket){
-        this.outBuffers.values().stream().forEach(buffer -> {
-            try {buffer.push(tcpPacket);}
-            catch (Exception e) {}
-        });
+    public void addPacket(String key, TCPPacket tcpPacket){
+        try {this.outBuffers.get(key).push(tcpPacket);}
+        catch (Exception e) {}
+    }
+
+
+    public Set<String> getKeys(){
+        return this.outBuffers.keySet();
     }
 }

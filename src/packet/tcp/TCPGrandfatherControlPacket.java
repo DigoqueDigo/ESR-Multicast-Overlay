@@ -7,7 +7,9 @@ import java.io.ByteArrayOutputStream;
 
 
 public class TCPGrandfatherControlPacket extends TCPPacket {
+
     private String grandfather;
+
 
     public TCPGrandfatherControlPacket() {
         super(TYPE.CONTROL_GRANDFATHER);
@@ -18,32 +20,48 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
         this.grandfather = grandfather;
     }
 
+
     public String getGrandfather() {
         return grandfather;
     }
 
+
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(super.toString());
+        buffer.append("\tGrandfather: ").append(this.grandfather);
+        return buffer.toString();
+    }
+
+
     @Override
     public byte[] serialize() {
+
         Kryo kryo = new Kryo();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
+        kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
-        kryo.writeObject(output, this.grandfather);
+        kryo.writeObject(output,this);
+
         output.flush();
         output.close();
 
         return byteArrayOutputStream.toByteArray();
     }
 
+
     public static TCPGrandfatherControlPacket deserialize(byte[] data) {
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
+        kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
-        String sender = kryo.readObject(input,String.class);
-        TCPGrandfatherControlPacket packet = new TCPGrandfatherControlPacket(sender);
+
+        TCPGrandfatherControlPacket packet = kryo.readObject(input,TCPGrandfatherControlPacket.class);
         input.close();
 
         return packet;
