@@ -26,4 +26,11 @@ public abstract class TCPPacket{
 
 
     public abstract byte[] serialize();
+
+
+    public String toString(){
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("TYPE: ").append(this.type.name());
+        return buffer.toString();
+    }
 }

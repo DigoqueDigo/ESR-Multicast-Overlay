@@ -7,7 +7,6 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 
-
 public class TCPBootstrapperPacket extends TCPPacket{
 
     private String node;

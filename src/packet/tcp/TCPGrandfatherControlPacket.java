@@ -1,11 +1,10 @@
 package packet.tcp;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+
 
 public class TCPGrandfatherControlPacket extends TCPPacket {
     private String grandfather;

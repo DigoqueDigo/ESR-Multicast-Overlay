@@ -1,30 +1,37 @@
 package node;
-
-import bootstrapper.Bootstrapper;
-import carrier.TCPCarrier;
-import org.json.JSONArray;
-import packet.tcp.TCPBootstrapperPacket;
-
+import org.json.JSONObject;
+import service.core.struct.Buffers;
+import service.establishconnection.FloodEstablishConnection;
+import service.establishconnection.WaitEstablishConnection;
+import service.gather.BootstrapperGrather;
 import java.io.IOException;
-import java.net.Socket;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
 public class Node {
+
+    public static final int PORT = 3000;
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
         String nodeName = args[0];
         String bootstrapperIP = args[1];
 
-        Socket socket = new Socket(bootstrapperIP, Bootstrapper.PORT);
-        TCPCarrier tcpCarrier = new TCPCarrier(socket.getInputStream(),socket.getOutputStream());
+        BootstrapperGrather bootstrapperGrather = new BootstrapperGrather(nodeName,bootstrapperIP);
+        JSONObject bootstrapperInfo = bootstrapperGrather.getBootstrapperInfo();
 
-        TCPBootstrapperPacket request = new TCPBootstrapperPacket(nodeName);
-        tcpCarrier.send(request);
+        List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
+            .toList().stream().map(Object::toString).collect(Collectors.toList());
 
-        TCPBootstrapperPacket response = (TCPBootstrapperPacket) tcpCarrier.receive();
-        JSONArray neighbours = response.getJsonObject().getJSONArray("neighbours");
-        System.out.println(neighbours);
+        Buffers buffers = new Buffers();
+        Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(buffers));
+        Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(buffers,neighbours));
 
-        socket.close();
+        waitEstablishConnection.start();
+        floodEstablishConnection.start();
+
+        waitEstablishConnection.wait();
+        floodEstablishConnection.wait();
     }
 }

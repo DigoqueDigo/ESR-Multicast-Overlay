@@ -1,9 +1,9 @@
 package client;
 import java.io.IOException;
-import java.net.Socket;
-import bootstrapper.Bootstrapper;
-import carrier.TCPCarrier;
-import packet.tcp.TCPBootstrapperPacket;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.json.JSONObject;
+import service.gather.BootstrapperGrather;
 
 
 public class Client {
@@ -13,15 +13,12 @@ public class Client {
         String nodeName = args[0];
         String bootstrapperIP = args[1];
 
-        Socket socket = new Socket(bootstrapperIP,Bootstrapper.PORT);
-        TCPCarrier tcpCarrier = new TCPCarrier(socket.getInputStream(),socket.getOutputStream());
+        BootstrapperGrather bootstrapperGrather = new BootstrapperGrather(nodeName,bootstrapperIP);
+        JSONObject bootstrapperInfo = bootstrapperGrather.getBootstrapperInfo();
 
-        TCPBootstrapperPacket request = new TCPBootstrapperPacket(nodeName);
-        tcpCarrier.send(request);
+        List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
+            .toList().stream().map(Object::toString).collect(Collectors.toList());
 
-        TCPBootstrapperPacket response = (TCPBootstrapperPacket) tcpCarrier.receive();
-        System.out.println(response.getJsonObject().getJSONArray("neighbours"));
-
-        socket.close();
+        System.out.println(neighbours);
     }
 }

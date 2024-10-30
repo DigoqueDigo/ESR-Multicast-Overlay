@@ -14,7 +14,7 @@ mvn clean
 
 Empacotar o código compilado num arquivo `JAR`
 ```
-mvn package
+mvn clean compile assembly:single
 ```
 
 Executar classes do programa
