@@ -7,7 +7,8 @@ public abstract class TCPPacket{
         BOOTSTRAPPER,
         CONTROL_ESTABLISH_CONNECTION,
         CONTROL_FLOOD,
-        CONTROL_GRANDFATHER}
+        CONTROL_GRANDFATHER
+    }
 
     private TYPE type;
 

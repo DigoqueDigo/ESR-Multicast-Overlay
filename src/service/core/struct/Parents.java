@@ -24,6 +24,11 @@ public class Parents{
     }
 
 
+    public void clear(){
+        this.parentsTimestamp.clear();
+    }
+
+
     public String getBestParent(){
         return this.parentsTimestamp.entrySet().stream()
             .min(Comparator.comparingLong(x -> x.getValue()))

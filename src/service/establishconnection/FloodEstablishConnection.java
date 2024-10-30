@@ -5,18 +5,20 @@ import java.util.List;
 import packet.tcp.TCPPacket;
 import service.core.connection.ConnectionWorker;
 import service.core.struct.BoundedBuffer;
-import service.core.struct.Buffers;
+import service.core.struct.OutBuffers;
 
 
 public class FloodEstablishConnection implements Runnable{
 
-    private Buffers buffers;
     private List<String> neighbours;
+    private OutBuffers outBuffers;
+    private BoundedBuffer<TCPPacket> inBuffer;
 
 
-    public FloodEstablishConnection(Buffers buffers, List<String> neighbours){
-        this.buffers = buffers;
+    public FloodEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, OutBuffers outBuffers, List<String> neighbours){
         this.neighbours = neighbours;
+        this.outBuffers = outBuffers;
+        this.inBuffer = inBuffer;
     }
 
 
@@ -28,13 +30,12 @@ public class FloodEstablishConnection implements Runnable{
 
             for (String neighbour : this.neighbours){
 
-                this.buffers.addOutBuffer(neighbour);
+                this.outBuffers.addOutBuffer(neighbour);
                 Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
 
-                BoundedBuffer<TCPPacket> inBuffer = this.buffers.getInBuffer();
-                BoundedBuffer<TCPPacket> outBuffer = this.buffers.getOutBuffer(neighbour);
-
+                BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
+
                 connectionWorkers.add(new Thread(connectionWorker));
             }
 
