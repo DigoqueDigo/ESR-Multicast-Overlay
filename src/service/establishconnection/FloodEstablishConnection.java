@@ -27,6 +27,7 @@ public class FloodEstablishConnection implements Runnable{
         try{
 
             List<Thread> connectionWorkers = new ArrayList<>();
+            System.out.println("FloodEstablishConnection service started");
 
             for (String neighbour : this.neighbours){
 
@@ -37,8 +38,10 @@ public class FloodEstablishConnection implements Runnable{
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 connectionWorkers.add(new Thread(connectionWorker));
+                System.out.println("FloodEstablishConnection with " + neighbour);
             }
 
+            System.out.println("FloodEstablishConnection all neighbours were connected");
             for (Thread worker : connectionWorkers) {worker.start();}
             for (Thread worker : connectionWorkers) {worker.join();}
         }

@@ -1,7 +1,7 @@
 package service.core;
 import java.util.HashSet;
 import java.util.Set;
-import packet.tcp.TCPFloodPacket;
+import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TYPE;
 import service.core.struct.BoundedBuffer;
@@ -25,20 +25,26 @@ public class ControlWorker implements Runnable{
     }
 
 
-    private void handleFloodPacket(TCPFloodPacket tcpFloodPacket){
+    private void handleFloodPacket(TCPFloodControlPacket tcpFloodPacket){
 
         long serverTimeStamp = tcpFloodPacket.getTimestamp();
         long delay = System.nanoTime() - serverTimeStamp;
 
         this.parents.addParent(tcpFloodPacket.getSender(),delay);
-        this.timestampHistory.add(serverTimeStamp);
 
+        
         // Se nunca tiver visto este servertimestamp vou dar flood dele
         if (this.timestampHistory.contains(serverTimeStamp) == false){
             for (String neighbour : this.outBuffers.getKeys()){
-                this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+                if (neighbour.equals(tcpFloodPacket.getSender()) == false){
+                    this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+                    System.out.println("ControlWorket -> " + neighbour);
+                }
             }
         }
+
+        this.timestampHistory.add(serverTimeStamp);
+        System.out.println(this.parents);
 
         // o historico do servertimestamp está sempre a crescer
         // arranjar forma de eliminar alguns valores
@@ -59,7 +65,7 @@ public class ControlWorker implements Runnable{
             while ((tcpPacket = this.controlBuffer.pop()) != null){
 
                 if (tcpPacket.getType() == TYPE.CONTROL_FLOOD){
-                    this.handleFloodPacket((TCPFloodPacket)tcpPacket);
+                    this.handleFloodPacket((TCPFloodControlPacket)tcpPacket);
                 }
 
                 else if (tcpPacket.getType() == TYPE.CONTROL_GRANDFATHER){

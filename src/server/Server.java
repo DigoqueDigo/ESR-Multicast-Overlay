@@ -1,9 +1,12 @@
 package server;
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 import packet.tcp.TCPPacket;
+import service.core.ControlFloodTimer;
 import service.core.ControlWorker;
 import service.core.CoreWorker;
 import service.core.struct.BoundedBuffer;
@@ -33,6 +36,9 @@ public class Server {
         Parents parents = new Parents();
         OutBuffers outBuffers = new OutBuffers();
 
+        Timer timer = new Timer();
+        TimerTask controlFlood = new ControlFloodTimer(nodeName,outBuffers);
+
         Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(inBuffer,outBuffers));
         Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(inBuffer,outBuffers,neighbours));
 
@@ -43,6 +49,7 @@ public class Server {
         floodEstablishConnection.start();
         coreWorker.start();
         controlWorker.start();
+        timer.schedule(controlFlood,ControlFloodTimer.delay,ControlFloodTimer.period);
 
         waitEstablishConnection.join();
         floodEstablishConnection.join();

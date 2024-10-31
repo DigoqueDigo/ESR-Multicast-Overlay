@@ -32,6 +32,8 @@ public class BootstrapperWorker implements Runnable{
             tcpBootstrapperPacket.setJsonObject(content);
             this.tcpCarrier.send(tcpBootstrapperPacket);
             this.socket.close();
+
+            System.out.println("BoostrapperWorker received message from " + tcpBootstrapperPacket.getNode());
         }
 
         catch (Exception e){

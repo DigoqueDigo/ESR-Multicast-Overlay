@@ -35,4 +35,13 @@ public class Parents{
             .map(x -> x.getKey())
             .orElse(null);  
     }
+
+
+    public String toString(){
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("PARENT MAP (TIMESTAMPS)");
+        this.parentsTimestamp.entrySet().stream()
+            .forEach(x -> buffer.append("\n" + x.getKey() + "\t" + x.getValue()));
+        return buffer.toString();
+        }
 }

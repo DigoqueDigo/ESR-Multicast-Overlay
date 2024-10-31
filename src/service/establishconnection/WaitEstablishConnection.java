@@ -27,6 +27,7 @@ public class WaitEstablishConnection implements Runnable{
 
             Socket socket;
             ServerSocket serverSocket = new ServerSocket(ESTABLISH_CONNECTION_PORT);
+            System.out.println("WaitEstablishConnection service started");
 
             while ((socket = serverSocket.accept()) != null){
 
@@ -37,6 +38,7 @@ public class WaitEstablishConnection implements Runnable{
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 new Thread(connectionWorker).start();
+                System.out.println("WaitEstablishConnection with " + neighbour);
             }
 
             serverSocket.close();

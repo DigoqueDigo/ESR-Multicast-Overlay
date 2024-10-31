@@ -25,6 +25,7 @@ public class CoreWorker implements Runnable{
             while ((tcpPacket =this.inBuffer.pop()) != null){
 
                 TYPE type = tcpPacket.getType();
+                System.out.println("CoreWorker received packet: " + tcpPacket);
 
                 if (type == TYPE.CONTROL_FLOOD || type == TYPE.CONTROL_GRANDFATHER){
                     this.controlBuffer.push(tcpPacket);

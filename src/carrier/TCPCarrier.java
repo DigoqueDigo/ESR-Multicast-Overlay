@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import packet.tcp.TCPBootstrapperPacket;
+import packet.tcp.TCPFloodControlPacket;
+import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TYPE;
 
@@ -19,6 +21,8 @@ public class TCPCarrier{
     static{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
         deserializeMap.put(TYPE.BOOTSTRAPPER, x -> TCPBootstrapperPacket.deserialize(x));
+        deserializeMap.put(TYPE.CONTROL_FLOOD, x -> TCPFloodControlPacket.deserialize(x));
+        deserializeMap.put(TYPE.CONTROL_GRANDFATHER, x -> TCPGrandfatherControlPacket.deserialize(x));
     }
 
     private DataInputStream dataInputStream;

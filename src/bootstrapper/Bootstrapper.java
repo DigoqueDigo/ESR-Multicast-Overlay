@@ -15,13 +15,15 @@ public class Bootstrapper{
 
     public static void main(String args[]) throws IOException, InterruptedException{
 
-        String json_content = new String(Files.readAllBytes(Paths.get("config/" + args[0])));
+        String json_content = new String(Files.readAllBytes(Paths.get(args[0])));
         JSONObject jsonObject = new JSONObject(json_content);
         int expected_clients = jsonObject.length();
 
         Socket socket;
         ServerSocket serverSocket = new ServerSocket(PORT);
         List<Thread> workers = new ArrayList<>();
+
+        System.out.println("Bootstrapper waiting for connection");
 
         while (expected_clients > 0 && (socket = serverSocket.accept()) != null){
             Thread worker = new Thread(new BootstrapperWorker(socket,jsonObject));

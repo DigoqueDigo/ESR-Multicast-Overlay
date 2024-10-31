@@ -6,23 +6,23 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class TCPFloodPacket extends TCPPacket {
+public class TCPFloodControlPacket extends TCPPacket {
     
     private String serverName;
     private long timestamp;
 
 
-    public TCPFloodPacket() {}
+    public TCPFloodControlPacket() {}
 
 
-    public TCPFloodPacket(String serverName) {
+    public TCPFloodControlPacket(String serverName) {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = System.nanoTime();
     }
 
 
-    public TCPFloodPacket(String serverName, long timestamp) {
+    public TCPFloodControlPacket(String serverName, long timestamp) {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = timestamp;
@@ -57,7 +57,7 @@ public class TCPFloodPacket extends TCPPacket {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(TCPPacket.TYPE.class);
-        kryo.register(TCPFloodPacket.class);
+        kryo.register(TCPFloodControlPacket.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -67,16 +67,16 @@ public class TCPFloodPacket extends TCPPacket {
     }
 
 
-    public static TCPFloodPacket deserialize(byte[] data) {
+    public static TCPFloodControlPacket deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(TCPPacket.TYPE.class);
-        kryo.register(TCPFloodPacket.class);
+        kryo.register(TCPFloodControlPacket.class);
 
-        TCPFloodPacket packet = kryo.readObject(input,TCPFloodPacket.class);
+        TCPFloodControlPacket packet = kryo.readObject(input,TCPFloodControlPacket.class);
         input.close();
 
         return packet;
