@@ -28,6 +28,12 @@ public class TCPFloodControlPacket extends TCPPacket {
         this.timestamp = timestamp;
     }
 
+    public TCPFloodControlPacket(TCPFloodControlPacket packet) {
+        super(packet.getType(), packet.getSender(), packet.getReceiver());
+        this.serverName = packet.getServerName();
+        this.timestamp = packet.getTimestamp();
+    }
+
 
     public long getTimestamp() {
         return this.timestamp;
@@ -80,5 +86,9 @@ public class TCPFloodControlPacket extends TCPPacket {
         input.close();
 
         return packet;
+    }
+
+    public TCPFloodControlPacket clone(){
+        return new TCPFloodControlPacket(this);
     }
 }

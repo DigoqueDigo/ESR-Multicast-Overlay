@@ -6,13 +6,13 @@ import carrier.TCPCarrier;
 import packet.tcp.TCPBootstrapperPacket;
 
 
-public class BootstrapperGrather{
+public class BootstrapperGather {
 
     private String nodeName;
     private String bootstrapperIP;
 
 
-    public BootstrapperGrather(String nodeName, String bootstrapperIP){
+    public BootstrapperGather(String nodeName, String bootstrapperIP){
         this.nodeName = nodeName;
         this.bootstrapperIP = bootstrapperIP;
     }

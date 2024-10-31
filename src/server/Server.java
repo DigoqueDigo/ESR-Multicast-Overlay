@@ -14,7 +14,7 @@ import service.core.struct.OutBuffers;
 import service.core.struct.Parents;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
-import service.gather.BootstrapperGrather;
+import service.gather.BootstrapperGather;
 
 
 public class Server {
@@ -24,8 +24,8 @@ public class Server {
         String nodeName = args[0];
         String bootstrapperIP = args[1];
 
-        BootstrapperGrather bootstrapperGrather = new BootstrapperGrather(nodeName,bootstrapperIP);
-        JSONObject bootstrapperInfo = bootstrapperGrather.getBootstrapperInfo();
+        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
+        JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
 
         List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
             .toList().stream().map(Object::toString).collect(Collectors.toList());

@@ -80,4 +80,7 @@ public class TCPBootstrapperPacket extends TCPPacket{
 
         return packet;
     }
+    public TCPBootstrapperPacket clone(){
+        return null;
+    }
 }

@@ -59,6 +59,7 @@ public abstract class TCPPacket{
 
     public abstract byte[] serialize();
 
+    public abstract TCPPacket clone();
 
     public String toString(){
         StringBuilder buffer = new StringBuilder();

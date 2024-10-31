@@ -38,7 +38,7 @@ public class WaitEstablishConnection implements Runnable{
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 new Thread(connectionWorker).start();
-                System.out.println("WaitEstablishConnection with " + neighbour);
+                System.out.println("Interface " + socket.getLocalAddress().getHostAddress() + ": WaitEstablishConnection with " + neighbour);
             }
 
             serverSocket.close();

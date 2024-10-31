@@ -38,7 +38,7 @@ public class ControlWorker implements Runnable{
             for (String neighbour : this.outBuffers.getKeys()){
                 if (neighbour.equals(tcpFloodPacket.getSender()) == false){
                     this.outBuffers.addPacket(neighbour,tcpFloodPacket);
-                    System.out.println("ControlWorket -> " + neighbour);
+                    System.out.println("Received packet from" + tcpFloodPacket.getSender() + " and sending it to " + neighbour);
                 }
             }
         }

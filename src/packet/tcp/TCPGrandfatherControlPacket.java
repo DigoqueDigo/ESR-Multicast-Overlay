@@ -20,6 +20,11 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
         this.grandfather = grandfather;
     }
 
+    public TCPGrandfatherControlPacket(TCPGrandfatherControlPacket packet) {
+        super(packet.getType(), packet.getSender(), packet.getReceiver());
+        this.grandfather = packet.getGrandfather();
+    }
+
 
     public String getGrandfather() {
         return grandfather;
@@ -66,4 +71,9 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
 
         return packet;
     }
+
+    public TCPGrandfatherControlPacket clone(){
+        return new TCPGrandfatherControlPacket(this);
+    }
+
 }

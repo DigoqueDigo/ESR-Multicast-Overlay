@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
-import service.gather.BootstrapperGrather;
+import service.gather.BootstrapperGather;
 
 
 public class Client {
@@ -13,8 +13,8 @@ public class Client {
         String nodeName = args[0];
         String bootstrapperIP = args[1];
         
-        BootstrapperGrather bootstrapperGrather = new BootstrapperGrather(nodeName,bootstrapperIP);
-        JSONObject bootstrapperInfo = bootstrapperGrather.getBootstrapperInfo();
+        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
+        JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
         
         List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
             .toList().stream().map(Object::toString).collect(Collectors.toList());

@@ -57,4 +57,8 @@ public class TCPEstablishControlConnectionPacket extends TCPPacket {
 
         return packet;
     }
+
+    public TCPEstablishControlConnectionPacket clone(){
+        return null;
+    }
 }

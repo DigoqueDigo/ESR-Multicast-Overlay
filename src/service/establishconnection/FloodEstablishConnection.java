@@ -38,7 +38,7 @@ public class FloodEstablishConnection implements Runnable{
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 connectionWorkers.add(new Thread(connectionWorker));
-                System.out.println("FloodEstablishConnection with " + neighbour);
+                System.out.println("Interface " + socket.getLocalAddress().getHostAddress() + ": FloodEstablishConnection with " + neighbour);
             }
 
             System.out.println("FloodEstablishConnection all neighbours were connected");

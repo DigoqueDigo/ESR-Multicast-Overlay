@@ -27,7 +27,7 @@ public class OutBuffers{
 
 
     public void addPacket(String key, TCPPacket tcpPacket){
-        try {this.outBuffers.get(key).push(tcpPacket);}
+        try {this.outBuffers.get(key).push(tcpPacket.clone());}
         catch (Exception e) {}
     }
 
