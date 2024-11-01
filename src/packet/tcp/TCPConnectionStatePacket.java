@@ -6,43 +6,43 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class TCPGrandfatherControlPacket extends TCPPacket {
+public class TCPConnectionStatePacket extends TCPPacket {
 
-    private String grandfather;
+    public enum PROTOCOL{
+        CONNECTION_LOST
+    }
+
+    private PROTOCOL protocol;
+
+    public TCPConnectionStatePacket() {}
 
 
-    public TCPGrandfatherControlPacket() {
-        super(TYPE.CONTROL_GRANDFATHER);
+    public TCPConnectionStatePacket(PROTOCOL protocol, String receiver, String sender) {
+        super(TYPE.CONNECTION_STATE, receiver, sender);
+        this.protocol = protocol;
     }
 
 
-    public TCPGrandfatherControlPacket(String grandfather) {
-        super(TYPE.CONTROL_GRANDFATHER);
-        this.grandfather = grandfather;
+    public TCPConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
+        super(TYPE.CONNECTION_STATE, tcpStatePacket.getReceiver(), tcpStatePacket.getSender());
+        this.protocol = tcpStatePacket.getProtocol();
     }
 
 
-    public TCPGrandfatherControlPacket(TCPGrandfatherControlPacket packet) {
-        super(packet.getType(), packet.getReceiver(), packet.getSender());
-        this.grandfather = packet.getGrandfather();
+    public TCPConnectionStatePacket clone(){
+        return new TCPConnectionStatePacket(this);
     }
 
 
-    public TCPGrandfatherControlPacket clone(){
-        return new TCPGrandfatherControlPacket(this);
+    public PROTOCOL getProtocol() {
+        return this.protocol;
     }
 
 
-    public String getGrandfather() {
-        return grandfather;
-    }
-
-
-    @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tGrandfather: ").append(this.grandfather);
+        buffer.append("\tPROTOCOL: ").append(this.protocol.name());
         return buffer.toString();
     }
 
@@ -55,7 +55,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(TCPPacket.TYPE.class);
-        kryo.register(TCPGrandfatherControlPacket.class);
+        kryo.register(TCPConnectionStatePacket.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -65,15 +65,16 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
     }
 
 
-    public static TCPGrandfatherControlPacket deserialize(byte[] data) {
+    public static TCPConnectionStatePacket deserialize(byte[] data) {
+
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(TCPPacket.TYPE.class);
-        kryo.register(TCPGrandfatherControlPacket.class);
+        kryo.register(TCPConnectionStatePacket.class);
 
-        TCPGrandfatherControlPacket packet = kryo.readObject(input,TCPGrandfatherControlPacket.class);
+        TCPConnectionStatePacket packet = kryo.readObject(input,TCPConnectionStatePacket.class);
         input.close();
 
         return packet;

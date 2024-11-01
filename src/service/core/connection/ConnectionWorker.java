@@ -27,10 +27,12 @@ public class ConnectionWorker implements Runnable{
 
             InputStream inputStream = this.socket.getInputStream();
             OutputStream outputStream = this.socket.getOutputStream();
-            String interfaceIP = this.socket.getLocalAddress().getHostAddress();
 
-            ConnectionReaderWorker connectionReaderWorker = new ConnectionReaderWorker(interfaceIP,inputStream,this.inBuffer);
-            ConnectionWriterWorker connectionWriterWorker = new ConnectionWriterWorker(interfaceIP,outputStream,this.outBuffer);
+            String myInterface = this.socket.getLocalAddress().getHostAddress();
+            String neighbourInterface = this.socket.getInetAddress().getHostAddress();
+
+            ConnectionReaderWorker connectionReaderWorker = new ConnectionReaderWorker(myInterface,neighbourInterface,inputStream,this.inBuffer);
+            ConnectionWriterWorker connectionWriterWorker = new ConnectionWriterWorker(myInterface,outputStream,this.outBuffer);
 
             Thread reader = new Thread(connectionReaderWorker);
             Thread writer = new Thread(connectionWriterWorker);

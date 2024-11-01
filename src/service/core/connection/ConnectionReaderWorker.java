@@ -1,19 +1,23 @@
 package service.core.connection;
 import java.io.InputStream;
 import carrier.TCPCarrier;
+import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
+import packet.tcp.TCPConnectionStatePacket.PROTOCOL;
 import service.core.struct.BoundedBuffer;
 
 
 public class ConnectionReaderWorker implements Runnable{
 
-    private String interfaceIP;
+    private String myInterface;
+    private String neighbourInterface;
     private InputStream inputStream;
     private BoundedBuffer<TCPPacket> inBuffer;
 
 
-    public ConnectionReaderWorker(String interfaceIP, InputStream inputStream, BoundedBuffer<TCPPacket> inBuffer){
-        this.interfaceIP = interfaceIP;
+    public ConnectionReaderWorker(String myInterce, String neighbourInterface, InputStream inputStream, BoundedBuffer<TCPPacket> inBuffer){
+        this.myInterface = myInterce;
+        this.neighbourInterface = neighbourInterface;
         this.inputStream = inputStream;
         this.inBuffer = inBuffer;
     }
@@ -27,13 +31,24 @@ public class ConnectionReaderWorker implements Runnable{
             TCPCarrier tcpCarrier = new TCPCarrier(this.inputStream,null);
 
             while ((receivePacket = tcpCarrier.receive()) != null){
-                receivePacket.setReceiver(interfaceIP);
+                receivePacket.setReceiver(myInterface);
                 this.inBuffer.push(receivePacket);
             }
         }
 
         catch (Exception e){
-            e.printStackTrace();
+
+            // informar que a conexão perdeu-se
+            TCPConnectionStatePacket tcpStatePacket = new TCPConnectionStatePacket(
+                PROTOCOL.CONNECTION_LOST,
+                this.myInterface,
+                this.neighbourInterface);
+
+            System.out.println("ConnectionReaderWorker lost connection: " + this.myInterface + " -> " + this.neighbourInterface);
+            System.out.println("ConnectionReaderWorker push state packet: " + tcpStatePacket);
+
+            try {this.inBuffer.push(tcpStatePacket);}
+            catch (Exception f) {f.printStackTrace();}
         }
     }
 }

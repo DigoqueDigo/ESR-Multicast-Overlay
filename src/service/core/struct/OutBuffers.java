@@ -26,6 +26,11 @@ public class OutBuffers{
     }
 
 
+    public void removeOutBuffer(String key){
+        this.outBuffers.remove(key);
+    }
+
+
     public void addPacket(String key, TCPPacket tcpPacket){
         try {this.outBuffers.get(key).push(tcpPacket.clone());}
         catch (Exception e) {}

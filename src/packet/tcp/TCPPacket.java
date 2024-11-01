@@ -5,7 +5,7 @@ public abstract class TCPPacket{
 
     public enum TYPE {
         BOOTSTRAPPER,
-        CONTROL_ESTABLISH_CONNECTION,
+        CONNECTION_STATE,
         CONTROL_FLOOD,
         CONTROL_GRANDFATHER
     }
@@ -25,7 +25,7 @@ public abstract class TCPPacket{
     }
 
 
-    public TCPPacket(TYPE type, String sender, String receiver){
+    public TCPPacket(TYPE type, String receiver, String sender){
         this.type = type;
         this.sender = sender;
         this.receiver = receiver;

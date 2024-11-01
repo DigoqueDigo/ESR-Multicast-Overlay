@@ -1,8 +1,11 @@
 package service.core;
 import java.util.Queue;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
+import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
+import packet.tcp.TCPConnectionStatePacket.PROTOCOL;
 import packet.tcp.TCPPacket.TYPE;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.OutBuffers;
@@ -39,21 +42,23 @@ public class ControlWorker implements Runnable{
             long delay = System.nanoTime() - serverTimeStamp;
 
             // so adiciono o nodo como pai se for o primeiro pacote que recebo dele
+            // so dou flood do pacote se for o primerio que recebo naquela interface
             String identifier = sender + serverTimeStamp.toString();
 
             if (this.history.contains(identifier) == false){
+
                 this.history.add(identifier);
                 this.parents.addParent(tcpFloodPacket.getSender(),delay);
-            }
 
-            // adicionar a minha assinatura ao pacote de control flood
-            tcpFloodPacket.addSignature(signature);
+                // adicionar a minha assinatura ao pacote de control flood
+                tcpFloodPacket.addSignature(signature);
 
-            // enviar o pacote para todas as interfaces execeto a do sender
-            for (String neighbour : this.outBuffers.getKeys()){
-                if (neighbour.equals(sender) == false){
-                    this.outBuffers.addPacket(neighbour,tcpFloodPacket);
-                    System.out.println("ControlWorker send: " + signature + " -> " + neighbour);
+                // enviar o pacote para todas as interfaces execeto a do sender
+                for (String neighbour : this.outBuffers.getKeys()){
+                    if (neighbour.equals(sender) == false){
+                        this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+                        System.out.println("ControlWorker send: " + signature + " -> " + neighbour);
+                    }
                 }
             }
         }
@@ -62,8 +67,23 @@ public class ControlWorker implements Runnable{
     }
 
 
-    private void handleGrandFatherPacket(TCPPacket tcpPacket){
+    private void handleGrandFatherPacket(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
+    }
+
+
+    private void handleConnectionLost(TCPConnectionStatePacket tcpStatePacket){
+        String neighbour = tcpStatePacket.getSender();
+        this.outBuffers.addPacket(neighbour,tcpStatePacket);
+        this.parents.removeParent(neighbour);
+        this.outBuffers.removeOutBuffer(neighbour);
+    }
+
+
+    private void handleConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
+        if (tcpStatePacket.getProtocol() == PROTOCOL.CONNECTION_LOST){
+            this.handleConnectionLost(tcpStatePacket);
+        }
     }
 
 
@@ -76,11 +96,15 @@ public class ControlWorker implements Runnable{
             while ((tcpPacket = this.controlBuffer.pop()) != null){
 
                 if (tcpPacket.getType() == TYPE.CONTROL_FLOOD){
-                    this.handleFloodPacket((TCPFloodControlPacket)tcpPacket);
+                    this.handleFloodPacket((TCPFloodControlPacket) tcpPacket);
                 }
 
                 else if (tcpPacket.getType() == TYPE.CONTROL_GRANDFATHER){
-                    this.handleGrandFatherPacket(tcpPacket);
+                    this.handleGrandFatherPacket((TCPGrandfatherControlPacket) tcpPacket);
+                }
+
+                else if (tcpPacket.getType() == TYPE.CONNECTION_STATE){
+                    this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
                 }
             }
         }

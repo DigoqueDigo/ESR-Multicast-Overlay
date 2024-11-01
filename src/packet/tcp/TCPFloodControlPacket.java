@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 
 public class TCPFloodControlPacket extends TCPPacket {
-    
+
     private String serverName;
     private long timestamp;
     private List<String> signatures;
@@ -34,11 +34,17 @@ public class TCPFloodControlPacket extends TCPPacket {
         this.signatures = new ArrayList<>();
     }
 
+
     public TCPFloodControlPacket(TCPFloodControlPacket packet) {
-        super(packet.getType(), packet.getSender(), packet.getReceiver());
+        super(packet.getType(), packet.getReceiver(), packet.getSender());
         this.serverName = packet.getServerName();
         this.timestamp = packet.getTimestamp();
         this.signatures = new ArrayList<>(packet.getSignatures());
+    }
+
+
+    public TCPFloodControlPacket clone(){
+        return new TCPFloodControlPacket(this);
     }
 
 
@@ -60,7 +66,7 @@ public class TCPFloodControlPacket extends TCPPacket {
     public void addSignature(String signature) {
         this.signatures.add(signature);
     }
-
+    
 
     @Override
     public String toString() {
@@ -106,9 +112,5 @@ public class TCPFloodControlPacket extends TCPPacket {
         input.close();
 
         return packet;
-    }
-
-    public TCPFloodControlPacket clone(){
-        return new TCPFloodControlPacket(this);
     }
 }
