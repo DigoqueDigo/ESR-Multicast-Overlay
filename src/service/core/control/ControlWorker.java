@@ -1,4 +1,4 @@
-package service.core;
+package service.core.control;
 import java.util.Queue;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import packet.tcp.TCPConnectionStatePacket;
@@ -6,7 +6,6 @@ import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPConnectionStatePacket.PROTOCOL;
-import packet.tcp.TCPPacket.TYPE;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.OutBuffers;
 import service.core.struct.Parents;
@@ -63,6 +62,10 @@ public class ControlWorker implements Runnable{
             }
         }
 
+        // eliminar todos os pais que sejam zombies
+        // podia fazer isto com o timertask, mas até que ponto compensa
+        this.parents.getZombies().stream().forEach(x -> this.parents.removeParent(x));
+
         System.out.println(this.parents);
     }
 
@@ -77,6 +80,7 @@ public class ControlWorker implements Runnable{
         this.outBuffers.addPacket(neighbour,tcpStatePacket);
         this.parents.removeParent(neighbour);
         this.outBuffers.removeOutBuffer(neighbour);
+        System.out.println("ControlWorker remove neighbour: " + neighbour);
     }
 
 
@@ -95,16 +99,23 @@ public class ControlWorker implements Runnable{
 
             while ((tcpPacket = this.controlBuffer.pop()) != null){
 
-                if (tcpPacket.getType() == TYPE.CONTROL_FLOOD){
-                    this.handleFloodPacket((TCPFloodControlPacket) tcpPacket);
-                }
+                switch (tcpPacket.getType()){
 
-                else if (tcpPacket.getType() == TYPE.CONTROL_GRANDFATHER){
-                    this.handleGrandFatherPacket((TCPGrandfatherControlPacket) tcpPacket);
-                }
+                    case CONTROL_FLOOD:
+                        this.handleFloodPacket((TCPFloodControlPacket) tcpPacket);
+                        break;
 
-                else if (tcpPacket.getType() == TYPE.CONNECTION_STATE){
-                    this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
+                    case CONTROL_GRANDFATHER:
+                        this.handleGrandFatherPacket((TCPGrandfatherControlPacket) tcpPacket);
+                        break;
+
+                    case CONNECTION_STATE:
+                        this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
+                        break;
+
+                    default:
+                        System.out.println("ControlWorker unknown tcpPacket: " + tcpPacket);
+                        break;
                 }
             }
         }

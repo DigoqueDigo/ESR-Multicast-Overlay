@@ -1,8 +1,8 @@
 package node;
 import org.json.JSONObject;
 import packet.tcp.TCPPacket;
-import service.core.ControlWorker;
 import service.core.CoreWorker;
+import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.OutBuffers;
 import service.core.struct.Parents;

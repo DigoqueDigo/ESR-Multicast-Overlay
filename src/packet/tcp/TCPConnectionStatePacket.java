@@ -56,6 +56,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
 
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
+        kryo.register(TCPConnectionStatePacket.PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -73,6 +74,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
 
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
+        kryo.register(TCPConnectionStatePacket.PROTOCOL.class);
 
         TCPConnectionStatePacket packet = kryo.readObject(input,TCPConnectionStatePacket.class);
         input.close();

@@ -26,9 +26,9 @@ node n2 {
     network-config {
 	hostname O3
 	!
-	interface eth3
-	 ip address 10.0.8.2/24
-	 ipv6 address 2001:8::2/64
+	interface eth2
+	 ip address 10.0.6.1/24
+	 ipv6 address 2001:6::1/64
 	!
 	interface eth1
 	 ip address 10.0.3.1/24
@@ -44,7 +44,7 @@ node n2 {
     labelcoords {601.0 445.0}
     interface-peer {eth0 n4}
     interface-peer {eth1 n1}
-    interface-peer {eth3 n3}
+    interface-peer {eth2 n5}
 }
 
 node n3 {
@@ -53,9 +53,9 @@ node n3 {
     network-config {
 	hostname O2
 	!
-	interface eth2
-	 ip address 10.0.8.1/24
-	 ipv6 address 2001:8::1/64
+	interface eth3
+	 ip address 10.0.9.1/24
+	 ipv6 address 2001:9::1/64
 	!
 	interface eth1
 	 ip address 10.0.5.2/24
@@ -71,18 +71,26 @@ node n3 {
     labelcoords {313.0 159.0}
     interface-peer {eth0 n6}
     interface-peer {eth1 n5}
-    interface-peer {eth2 n2}
+    interface-peer {eth3 n4}
 }
 
 node n4 {
     type router
     model router
     network-config {
-	hostname n4
+	hostname O4
+	!
+	interface eth4
+	 ip address 10.0.8.1/24
+	 ipv6 address 2001:8::1/64
+	!
+	interface eth3
+	 ip address 10.0.9.2/24
+	 ipv6 address 2001:9::2/64
 	!
 	interface eth2
-	 ip address 10.0.6.1/24
-	 ipv6 address 2001:6::1/64
+	 ip address 10.0.7.1/24
+	 ipv6 address 2001:7::1/64
 	!
 	interface eth1
 	 ip address 10.0.2.1/24
@@ -99,6 +107,8 @@ node n4 {
     interface-peer {eth0 n7}
     interface-peer {eth1 n2}
     interface-peer {eth2 n8}
+    interface-peer {eth3 n3}
+    interface-peer {eth4 n5}
 }
 
 node n5 {
@@ -106,6 +116,14 @@ node n5 {
     model router
     network-config {
 	hostname O1
+	!
+	interface eth3
+	 ip address 10.0.8.2/24
+	 ipv6 address 2001:8::2/64
+	!
+	interface eth2
+	 ip address 10.0.6.2/24
+	 ipv6 address 2001:6::2/64
 	!
 	interface eth1
 	 ip address 10.0.5.1/24
@@ -121,6 +139,8 @@ node n5 {
     labelcoords {600.0 158.0}
     interface-peer {eth0 n1}
     interface-peer {eth1 n3}
+    interface-peer {eth2 n2}
+    interface-peer {eth3 n4}
 }
 
 node n6 {
@@ -161,16 +181,16 @@ node n8 {
     type router
     model host
     network-config {
-	hostname n8
+	hostname bootstrapper
 	!
 	interface eth0
-	 ip address 10.0.6.10/24
-	 ipv6 address 2001:6::10/64
+	 ip address 10.0.7.10/24
+	 ipv6 address 2001:7::10/64
 	!
     }
     canvas c1
-    iconcoords {216.0 268.0}
-    labelcoords {216.0 300.0}
+    iconcoords {72.0 252.0}
+    labelcoords {72.0 284.0}
     interface-peer {eth0 n4}
 }
 
@@ -185,6 +205,8 @@ link l2 {
 }
 
 link l3 {
+    width 8
+    color Cyan
     nodes {n4 n2}
     bandwidth 0
 }
@@ -210,15 +232,29 @@ link l6 {
     bandwidth 0
 }
 
-link l9 {
-    width 8
-    color Cyan
-    nodes {n3 n2}
+link l7 {
+    width 2
+    color Red
+    nodes {n2 n5}
     bandwidth 0
 }
 
-link l7 {
-    nodes {n8 n4}
+link l8 {
+    nodes {n4 n8}
+    bandwidth 0
+}
+
+link l10 {
+    width 8
+    color Cyan
+    nodes {n3 n4}
+    bandwidth 0
+}
+
+link l9 {
+    width 8
+    color Cyan
+    nodes {n4 n5}
     bandwidth 0
 }
 
@@ -261,6 +297,19 @@ annotation a3 {
     canvas c1
 }
 
+annotation a4 {
+    iconcoords {269 361 355 447}
+    type oval
+    label {}
+    labelcolor black
+    fontfamily {Arial}
+    fontsize {12}
+    color #CFCFFF
+    width 0
+    border black
+    canvas c1
+}
+
 canvas c1 {
     name {Canvas1}
 }
@@ -280,4 +329,3 @@ option global {
 
 option session {
 }
-

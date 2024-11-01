@@ -1,14 +1,14 @@
-package service.core;
+package service.core.control;
 import java.util.TimerTask;
 import packet.tcp.TCPFloodControlPacket;
 import service.core.struct.OutBuffers;
 
 
 public class ControlFloodTimer extends TimerTask{
-    
+
     public static final int delay = 1000;
     public static final int period = 10000;
-    
+
     private String serverName;
     private String signature;
     private OutBuffers outBuffers;
