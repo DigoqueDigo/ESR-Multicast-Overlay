@@ -1,4 +1,5 @@
 package service.establishconnection;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +32,25 @@ public class FloodEstablishConnection implements Runnable{
 
             for (String neighbour : this.neighbours){
 
-                this.outBuffers.addOutBuffer(neighbour);
-                Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
+                try{
 
-                BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
-                ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
+                    Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
+                    String myInterface = socket.getLocalAddress().getHostAddress();
+                    this.outBuffers.addOutBuffer(neighbour);
 
-                connectionWorkers.add(new Thread(connectionWorker));
-                System.out.println("Interface " + socket.getLocalAddress().getHostAddress() + ": FloodEstablishConnection with " + neighbour);
+                    BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
+                    ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
+
+                    connectionWorkers.add(new Thread(connectionWorker));
+                    System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
+                }
+
+                catch (IOException e){
+                    System.out.println("FloodEstablishConnection service can not contact: " + neighbour);
+                }
             }
 
-            System.out.println("FloodEstablishConnection all neighbours were connected");
+            System.out.println("FloodEstablishConnection service finished");
             for (Thread worker : connectionWorkers) {worker.start();}
             for (Thread worker : connectionWorkers) {worker.join();}
         }

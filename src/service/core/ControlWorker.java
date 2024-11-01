@@ -1,6 +1,6 @@
 package service.core;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Queue;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TYPE;
@@ -11,43 +11,54 @@ import service.core.struct.Parents;
 
 public class ControlWorker implements Runnable{
 
+    private static final int HISTORY_SIZE = 100;
+
+    private String signature;
     private Parents parents;
-    private Set<Long> timestampHistory;
     private OutBuffers outBuffers;
+    private Queue<String> history;
     private BoundedBuffer<TCPPacket> controlBuffer;
 
 
-    public ControlWorker(Parents parents, BoundedBuffer<TCPPacket> controlBuffer, OutBuffers outBuffers){
+    public ControlWorker(String signature, Parents parents, BoundedBuffer<TCPPacket> controlBuffer, OutBuffers outBuffers){
+        this.signature = signature;
         this.parents = parents;
         this.outBuffers = outBuffers;
         this.controlBuffer = controlBuffer;
-        this.timestampHistory = new HashSet<>();
+        this.history = new CircularFifoQueue<>(HISTORY_SIZE);
     }
 
 
     private void handleFloodPacket(TCPFloodControlPacket tcpFloodPacket){
 
-        long serverTimeStamp = tcpFloodPacket.getTimestamp();
-        long delay = System.nanoTime() - serverTimeStamp;
+        // so inspeciono o pacote se nao tiver a minha assinatura
+        if (tcpFloodPacket.getSignatures().contains(signature) == false){
 
-        this.parents.addParent(tcpFloodPacket.getSender(),delay);
+            String sender = tcpFloodPacket.getSender();
+            Long serverTimeStamp = tcpFloodPacket.getTimestamp();
+            long delay = System.nanoTime() - serverTimeStamp;
 
-        
-        // Se nunca tiver visto este servertimestamp vou dar flood dele
-        if (this.timestampHistory.contains(serverTimeStamp) == false){
+            // so adiciono o nodo como pai se for o primeiro pacote que recebo dele
+            String identifier = sender + serverTimeStamp.toString();
+
+            if (this.history.contains(identifier) == false){
+                this.history.add(identifier);
+                this.parents.addParent(tcpFloodPacket.getSender(),delay);
+            }
+
+            // adicionar a minha assinatura ao pacote de control flood
+            tcpFloodPacket.addSignature(signature);
+
+            // enviar o pacote para todas as interfaces execeto a do sender
             for (String neighbour : this.outBuffers.getKeys()){
-                if (neighbour.equals(tcpFloodPacket.getSender()) == false){
+                if (neighbour.equals(sender) == false){
                     this.outBuffers.addPacket(neighbour,tcpFloodPacket);
-                    System.out.println("Received packet from" + tcpFloodPacket.getSender() + " and sending it to " + neighbour);
+                    System.out.println("ControlWorker send: " + signature + " -> " + neighbour);
                 }
             }
         }
 
-        this.timestampHistory.add(serverTimeStamp);
         System.out.println(this.parents);
-
-        // o historico do servertimestamp está sempre a crescer
-        // arranjar forma de eliminar alguns valores
     }
 
 

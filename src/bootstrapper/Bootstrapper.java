@@ -17,7 +17,6 @@ public class Bootstrapper{
 
         String json_content = new String(Files.readAllBytes(Paths.get(args[0])));
         JSONObject jsonObject = new JSONObject(json_content);
-        int expected_clients = jsonObject.length();
 
         Socket socket;
         ServerSocket serverSocket = new ServerSocket(PORT);
@@ -25,11 +24,10 @@ public class Bootstrapper{
 
         System.out.println("Bootstrapper waiting for connection");
 
-        while (expected_clients > 0 && (socket = serverSocket.accept()) != null){
+        while ((socket = serverSocket.accept()) != null){
             Thread worker = new Thread(new BootstrapperWorker(socket,jsonObject));
             workers.add(worker);
             worker.start();
-            expected_clients--;
         }
 
         for (Thread worker : workers){

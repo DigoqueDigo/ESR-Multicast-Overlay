@@ -39,7 +39,7 @@ public class Node {
         Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(inBuffer,outBuffers,neighbours));
 
         Thread coreWorker = new Thread(new CoreWorker(inBuffer,controlBuffer));
-        Thread controlWorker = new Thread(new ControlWorker(parents,controlBuffer,outBuffers));
+        Thread controlWorker = new Thread(new ControlWorker(nodeName,parents,controlBuffer,outBuffers));
 
         waitEstablishConnection.start();
         floodEstablishConnection.start();

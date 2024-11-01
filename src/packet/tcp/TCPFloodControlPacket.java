@@ -4,12 +4,16 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class TCPFloodControlPacket extends TCPPacket {
     
     private String serverName;
     private long timestamp;
+    private List<String> signatures;
 
 
     public TCPFloodControlPacket() {}
@@ -19,6 +23,7 @@ public class TCPFloodControlPacket extends TCPPacket {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = System.nanoTime();
+        this.signatures = new ArrayList<>();
     }
 
 
@@ -26,12 +31,14 @@ public class TCPFloodControlPacket extends TCPPacket {
         super(TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = timestamp;
+        this.signatures = new ArrayList<>();
     }
 
     public TCPFloodControlPacket(TCPFloodControlPacket packet) {
         super(packet.getType(), packet.getSender(), packet.getReceiver());
         this.serverName = packet.getServerName();
         this.timestamp = packet.getTimestamp();
+        this.signatures = new ArrayList<>(packet.getSignatures());
     }
 
 
@@ -45,12 +52,23 @@ public class TCPFloodControlPacket extends TCPPacket {
     }
 
 
+    public List<String> getSignatures() {
+        return this.signatures.stream().collect(Collectors.toList());
+    }
+
+
+    public void addSignature(String signature) {
+        this.signatures.add(signature);
+    }
+
+
     @Override
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
         buffer.append("\tServerName: ").append(this.serverName);
         buffer.append("\tTimestamp: ").append(this.timestamp);
+        buffer.append("\nSignatures: ").append(this.signatures.stream().collect(Collectors.joining(" ")));
         return buffer.toString();
     }
 
@@ -62,6 +80,7 @@ public class TCPFloodControlPacket extends TCPPacket {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
+        kryo.register(ArrayList.class);
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPFloodControlPacket.class);
         kryo.writeObject(output,this);
@@ -79,6 +98,7 @@ public class TCPFloodControlPacket extends TCPPacket {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
+        kryo.register(ArrayList.class);
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPFloodControlPacket.class);
 

@@ -32,13 +32,14 @@ public class WaitEstablishConnection implements Runnable{
             while ((socket = serverSocket.accept()) != null){
 
                 String neighbour = socket.getInetAddress().getHostAddress();
+                String myInterface = socket.getLocalAddress().getHostAddress();
                 this.outBuffers.addOutBuffer(neighbour);
 
                 BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 new Thread(connectionWorker).start();
-                System.out.println("Interface " + socket.getLocalAddress().getHostAddress() + ": WaitEstablishConnection with " + neighbour);
+                System.out.println("WaitEstablishConnection service contact: " + myInterface + " -> " + neighbour);
             }
 
             serverSocket.close();
