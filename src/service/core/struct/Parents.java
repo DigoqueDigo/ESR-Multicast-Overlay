@@ -1,6 +1,7 @@
 package service.core.struct;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -9,7 +10,7 @@ import java.util.stream.Collectors;
 public class Parents{
 
     // o pai é dado como morto se não for atualizado em 15 segundos
-    private static final Long ZOMBIE =  15_000_000_000L;
+    private static final Long ZOMBIE =  20_000_000_000L;
 
     private ConcurrentMap<String,Long> parentsTimestamp;
     private ConcurrentMap<String,Long> parentsUpdate;
@@ -44,9 +45,8 @@ public class Parents{
     }
 
 
-    public List<String> getParents(){
-        return this.parentsTimestamp.keySet()
-            .stream().collect(Collectors.toList());
+    public Set<String> getParents(){
+        return this.parentsTimestamp.keySet();
     }
 
 
@@ -71,5 +71,5 @@ public class Parents{
         this.parentsTimestamp.entrySet().stream()
             .forEach(x -> buffer.append("\n" + x.getKey() + "\t" + x.getValue()));
         return buffer.toString();
-        }
+    }
 }

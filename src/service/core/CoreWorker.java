@@ -25,7 +25,7 @@ public class CoreWorker implements Runnable{
             while ((tcpPacket =this.inBuffer.pop()) != null){
 
                 TYPE type = tcpPacket.getType();
-                System.out.println("CoreWorker received packet: " + tcpPacket);
+                System.out.println("CoreWorker received packet:\n" + tcpPacket);
 
                 switch (type){
 
@@ -42,7 +42,7 @@ public class CoreWorker implements Runnable{
                         break;
 
                     default:
-                        System.out.println("CoreWorker unknown tcpPacket: " + tcpPacket);
+                        System.out.println("CoreWorker unknown packet:\n" + tcpPacket);
                         break;
                 }
             }

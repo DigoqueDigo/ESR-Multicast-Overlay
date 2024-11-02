@@ -1,7 +1,7 @@
 package service.core.control;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
@@ -20,8 +20,11 @@ public class ControlWorker implements Runnable{
 
     private String signature;
     private Parents parents;
+
     private Queue<String> history;
-    private List<String> grandParents;
+    private Set<String> blackList;
+    private Set<String> grandParents;
+
     private OutBuffers outBuffers;
     private BoundedBuffer<TCPPacket> controlBuffer;
     private BoundedBuffer<String> connectionBuffer;
@@ -33,7 +36,8 @@ public class ControlWorker implements Runnable{
         this.outBuffers = outBuffers;
         this.controlBuffer = controlBuffer;
         this.connectionBuffer = connectionBuffer;
-        this.grandParents = new ArrayList<>();
+        this.grandParents = new HashSet<>();
+        this.blackList = new HashSet<>();
         this.history = new CircularFifoQueue<>(HISTORY_SIZE);
     }
 
@@ -70,6 +74,7 @@ public class ControlWorker implements Runnable{
         }
 
         System.out.println(this.parents);
+        System.out.println("GRANDPARENTS: " + this.grandParents);
     }
 
 
@@ -91,16 +96,33 @@ public class ControlWorker implements Runnable{
 
 
     private void handleGrandFatherRequest(TCPGrandfatherControlPacket tcpGrandfatherPacket){
-        List<String> parents = this.parents.getParents();
+
+        String sender = tcpGrandfatherPacket.getSender();
+        Set<String> parents = this.parents.getParents();
+
+        // remover o sender, pode ser um dos meus pais
+        parents.remove(sender);
+
+        // criar um pacote com os meus pais e enviar ao filho
         TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REPLY,parents);
-        this.outBuffers.addPacket(tcpGrandfatherPacket.getSender(),reply);
-        System.out.println("ControlWorker receive GrandFather request: " + tcpGrandfatherPacket);
+        this.outBuffers.addPacket(sender,reply);
+
+        System.out.println("ControlWorker receive grandfather request: " + this.signature + " <- " + sender);
+        System.out.println("ControlWorker send grandfather reply: " + this.signature + " -> " + sender);
     }
 
 
     private void handleGrandFatherReply(TCPGrandfatherControlPacket tcpGrandfatherPacket){
+
+        String sender = tcpGrandfatherPacket.getSender();
         this.grandParents = tcpGrandfatherPacket.getGrandparents();
-        System.out.println("ControlWorker receive GrandFather reply: " + tcpGrandfatherPacket);
+        System.out.println("ControlWorker receive grandFather reply: " + this.signature + " <- " + sender);
+
+        // se o nodo não tem pais, adicionar a lista negra
+        if (this.grandParents.size() == 0){
+            this.blackList.add(sender);
+            System.out.println("ControlWorker add blacklist: " + sender);
+        }
     }
 
 
@@ -115,24 +137,52 @@ public class ControlWorker implements Runnable{
         this.outBuffers.removeOutBuffer(neighbour);
         System.out.println("ControlWorker remove neighbour: " + neighbour);
 
-        // se fiquei com um pai o nao conheco avos, enviar um request
-        if (this.parents.size() == 1 && this.grandParents.size() == 0){
-            TCPGrandfatherControlPacket requestGrandParents = new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REQUEST);
-            for (String parent : this.parents.getParents()){
-                this.outBuffers.addPacket(parent,requestGrandParents);
-                System.out.println("ControlWorker send GrandFather request: " + requestGrandParents);
+        // se perdi a conexao com todos os pais, informar os filhos e contactar os avos
+        if (this.parents.size() == 0){
+
+            // os meus avos agora sao os meus pais
+            // informar os meus filhos que o avo deles morreu
+            TCPGrandfatherControlPacket info = new TCPGrandfatherControlPacket(
+                GF_PROTOCOL.GRANDFATHER_REPLY, this.grandParents);
+
+            for (String son : this.outBuffers.getKeys()){
+                this.outBuffers.addPacket(son,info);
+                System.out.println("ControlWorker send grandfather reply: " + this.signature + " -> " + son);
             }
-        }
 
-        // se perdi a conexao com todos os pais, contactar os avos
-        else if (this.parents.size() == 0){
-
+            // entrar em contacto com os meus avos
             for (String grandParent : this.grandParents){
                 try {this.connectionBuffer.push(grandParent);}
                 catch (Exception e) {e.printStackTrace();}
             }
 
+            // deixei de ter avos
             this.grandParents.clear();
+        }
+    }
+
+
+    private void requestGrandParends(){
+
+        TCPGrandfatherControlPacket requestGrandParents =
+            new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REQUEST);
+
+        // nunca faco um pedido nas primeiras iteracoes de flood
+        if (this.history.size() > 1){
+
+            // envio o pedido de tiver um pai e ainda nao conhecer os avos
+            if (this.parents.size() == 1 && this.grandParents.size() == 0){    
+
+                // enviar o pedido para todos pais (sera sempre um)
+                for (String parent : this.parents.getParents()){
+
+                    // o pai nao pode estar na lista negra
+                    if (this.blackList.contains(parent) == false){
+                        this.outBuffers.addPacket(parent,requestGrandParents);
+                        System.out.println("ControlWorker send grandfather request: " + this.signature + " -> " + parent);
+                    }
+                }
+            }
         }
     }
 
@@ -144,6 +194,9 @@ public class ControlWorker implements Runnable{
             TCPPacket tcpPacket;
 
             while ((tcpPacket = this.controlBuffer.pop()) != null){
+
+                // sempre que recebo um pacote verifico se nenhum dos pais é zombie
+                this.parents.getZombies().forEach(x -> {this.parents.removeParent(x); System.out.println("AQUI");});
 
                 switch (tcpPacket.getType()){
 
@@ -160,12 +213,12 @@ public class ControlWorker implements Runnable{
                         break;
 
                     default:
-                        System.out.println("ControlWorker unknown tcpPacket: " + tcpPacket);
+                        System.out.println("ControlWorker unknown tcpPacket:\n" + tcpPacket);
                         break;
                 }
 
-                // sempre que recebo um pacote verifico se nenhum dos pais é zombie
-                this.parents.getZombies().forEach(x -> this.parents.removeParent(x));
+                // envia um pedido de grandfather caso seja necessario
+                this.requestGrandParends();
             }
         }
 

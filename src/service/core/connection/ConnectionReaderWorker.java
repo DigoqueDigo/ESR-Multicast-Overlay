@@ -44,11 +44,14 @@ public class ConnectionReaderWorker implements Runnable{
                 this.myInterface,
                 this.neighbourInterface);
 
-            System.out.println("ConnectionReaderWorker lost connection: " + this.myInterface + " -> " + this.neighbourInterface);
-            System.out.println("ConnectionReaderWorker push state packet: " + tcpStatePacket);
+            try {
+                this.inBuffer.push(tcpStatePacket);
+                System.out.println("ConnectionReaderWorker lost connection: " + this.myInterface + " -> " + this.neighbourInterface);
+            }
 
-            try {this.inBuffer.push(tcpStatePacket);}
-            catch (Exception f) {f.printStackTrace();}
+            catch (Exception f){
+                f.printStackTrace();
+            }
         }
     }
 }
