@@ -1,8 +1,6 @@
 package service.establishconnection;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import packet.tcp.TCPPacket;
 import service.core.connection.ConnectionWorker;
 import service.core.struct.BoundedBuffer;
@@ -11,13 +9,13 @@ import service.core.struct.OutBuffers;
 
 public class FloodEstablishConnection implements Runnable{
 
-    private List<String> neighbours;
     private OutBuffers outBuffers;
     private BoundedBuffer<TCPPacket> inBuffer;
+    private BoundedBuffer<String> connectionBuffer;
 
 
-    public FloodEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, OutBuffers outBuffers, List<String> neighbours){
-        this.neighbours = neighbours;
+    public FloodEstablishConnection(BoundedBuffer<String> connectionBuffer, BoundedBuffer<TCPPacket> inBuffer, OutBuffers outBuffers){
+        this.connectionBuffer = connectionBuffer;
         this.outBuffers = outBuffers;
         this.inBuffer = inBuffer;
     }
@@ -27,10 +25,10 @@ public class FloodEstablishConnection implements Runnable{
 
         try{
 
-            List<Thread> connectionWorkers = new ArrayList<>();
+            String neighbour;
             System.out.println("FloodEstablishConnection service started");
 
-            for (String neighbour : this.neighbours){
+            while ((neighbour = this.connectionBuffer.pop()) != null){
 
                 try{
 
@@ -41,7 +39,7 @@ public class FloodEstablishConnection implements Runnable{
                     BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
                     ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
-                    connectionWorkers.add(new Thread(connectionWorker));
+                    new Thread(connectionWorker).start();
                     System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
                 }
 
@@ -49,10 +47,6 @@ public class FloodEstablishConnection implements Runnable{
                     System.out.println("FloodEstablishConnection service can not contact: " + neighbour);
                 }
             }
-
-            System.out.println("FloodEstablishConnection service finished");
-            for (Thread worker : connectionWorkers) {worker.start();}
-            for (Thread worker : connectionWorkers) {worker.join();}
         }
 
         catch (Exception e){

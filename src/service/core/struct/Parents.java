@@ -1,8 +1,8 @@
 package service.core.struct;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 
@@ -11,13 +11,13 @@ public class Parents{
     // o pai é dado como morto se não for atualizado em 15 segundos
     private static final Long ZOMBIE =  15_000_000_000L;
 
-    private Map<String,Long> parentsTimestamp;
-    private Map<String,Long> parentsUpdate;
+    private ConcurrentMap<String,Long> parentsTimestamp;
+    private ConcurrentMap<String,Long> parentsUpdate;
 
 
     public Parents(){
-        this.parentsTimestamp = new HashMap<>();
-        this.parentsUpdate = new HashMap<>();
+        this.parentsTimestamp = new ConcurrentHashMap<>();
+        this.parentsUpdate = new ConcurrentHashMap<>();
     }
 
 
@@ -36,6 +36,17 @@ public class Parents{
     public void clear(){
         this.parentsTimestamp.clear();
         this.parentsUpdate.clear();
+    }
+
+
+    public int size(){
+        return this.parentsTimestamp.size();
+    }
+
+
+    public List<String> getParents(){
+        return this.parentsTimestamp.keySet()
+            .stream().collect(Collectors.toList());
     }
 
 

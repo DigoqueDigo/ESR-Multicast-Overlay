@@ -8,16 +8,16 @@ import java.io.ByteArrayOutputStream;
 
 public class TCPConnectionStatePacket extends TCPPacket {
 
-    public enum PROTOCOL{
+    public enum CS_PROTOCOL{
         CONNECTION_LOST
     }
 
-    private PROTOCOL protocol;
+    private CS_PROTOCOL protocol;
 
     public TCPConnectionStatePacket() {}
 
 
-    public TCPConnectionStatePacket(PROTOCOL protocol, String receiver, String sender) {
+    public TCPConnectionStatePacket(CS_PROTOCOL protocol, String receiver, String sender) {
         super(TYPE.CONNECTION_STATE, receiver, sender);
         this.protocol = protocol;
     }
@@ -34,7 +34,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
     }
 
 
-    public PROTOCOL getProtocol() {
+    public CS_PROTOCOL getProtocol() {
         return this.protocol;
     }
 
@@ -56,7 +56,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
 
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
-        kryo.register(TCPConnectionStatePacket.PROTOCOL.class);
+        kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -74,7 +74,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
 
         kryo.register(TCPPacket.TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
-        kryo.register(TCPConnectionStatePacket.PROTOCOL.class);
+        kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
 
         TCPConnectionStatePacket packet = kryo.readObject(input,TCPConnectionStatePacket.class);
         input.close();

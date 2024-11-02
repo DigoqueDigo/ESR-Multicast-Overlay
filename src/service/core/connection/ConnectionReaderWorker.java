@@ -3,7 +3,7 @@ import java.io.InputStream;
 import carrier.TCPCarrier;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
-import packet.tcp.TCPConnectionStatePacket.PROTOCOL;
+import packet.tcp.TCPConnectionStatePacket.CS_PROTOCOL;
 import service.core.struct.BoundedBuffer;
 
 
@@ -40,7 +40,7 @@ public class ConnectionReaderWorker implements Runnable{
 
             // informar que a conexão perdeu-se
             TCPConnectionStatePacket tcpStatePacket = new TCPConnectionStatePacket(
-                PROTOCOL.CONNECTION_LOST,
+                CS_PROTOCOL.CONNECTION_LOST,
                 this.myInterface,
                 this.neighbourInterface);
 

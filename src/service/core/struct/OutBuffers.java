@@ -7,7 +7,7 @@ import packet.tcp.TCPPacket;
 
 public class OutBuffers{
 
-    private static final int BUFFER_SIZE = 10;
+    private static final int BUFFER_SIZE = 100;
     private ConcurrentMap<String,BoundedBuffer<TCPPacket>> outBuffers;
 
 

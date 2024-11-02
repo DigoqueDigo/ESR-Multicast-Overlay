@@ -32,6 +32,7 @@ public class Server {
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
+        BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
         Parents parents = new Parents();
         OutBuffers outBuffers = new OutBuffers();
@@ -40,16 +41,20 @@ public class Server {
         TimerTask controlFlood = new ControlFloodTimer(nodeName,outBuffers);
 
         Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(inBuffer,outBuffers));
-        Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(inBuffer,outBuffers,neighbours));
+        Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers));
 
         Thread coreWorker = new Thread(new CoreWorker(inBuffer,controlBuffer));
-        Thread controlWorker = new Thread(new ControlWorker(nodeName,parents,controlBuffer,outBuffers));
+        Thread controlWorker = new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers));
 
         waitEstablishConnection.start();
         floodEstablishConnection.start();
         coreWorker.start();
         controlWorker.start();
         timer.schedule(controlFlood,ControlFloodTimer.delay,ControlFloodTimer.period);
+
+        for (String neighbour : neighbours){
+            connectionBuffer.push(neighbour);
+        }
 
         waitEstablishConnection.join();
         floodEstablishConnection.join();
