@@ -75,6 +75,7 @@ public class ControlWorker implements Runnable{
 
         System.out.println(this.parents);
         System.out.println("GRANDPARENTS: " + this.grandParents);
+        System.out.println("BLACKLIST: " + this.blackList);
     }
 
 
@@ -107,22 +108,15 @@ public class ControlWorker implements Runnable{
         TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REPLY,parents);
         this.outBuffers.addPacket(sender,reply);
 
-        System.out.println("ControlWorker receive grandfather request: " + this.signature + " <- " + sender);
-        System.out.println("ControlWorker send grandfather reply: " + this.signature + " -> " + sender);
+        System.out.println("ControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
+        System.out.println("ControlWorker (grandfather request) send grandfather reply: " + this.signature + " -> " + sender);
     }
 
 
     private void handleGrandFatherReply(TCPGrandfatherControlPacket tcpGrandfatherPacket){
-
         String sender = tcpGrandfatherPacket.getSender();
         this.grandParents = tcpGrandfatherPacket.getGrandparents();
-        System.out.println("ControlWorker receive grandFather reply: " + this.signature + " <- " + sender);
-
-        // se o nodo não tem pais, adicionar a lista negra
-        if (this.grandParents.size() == 0){
-            this.blackList.add(sender);
-            System.out.println("ControlWorker add blacklist: " + sender);
-        }
+        System.out.println("ControlWorker (grandfather reply) receive grandFather reply: " + this.signature + " <- " + sender);
     }
 
 
@@ -135,7 +129,7 @@ public class ControlWorker implements Runnable{
         // remover o neighbour dos pais e eliminar o buffer
         this.parents.removeParent(neighbour);
         this.outBuffers.removeOutBuffer(neighbour);
-        System.out.println("ControlWorker remove neighbour: " + neighbour);
+        System.out.println("ControlWorker (connection lost) remove neighbour: " + neighbour);
 
         // se perdi a conexao com todos os pais, informar os filhos e contactar os avos
         if (this.parents.size() == 0){
@@ -147,7 +141,7 @@ public class ControlWorker implements Runnable{
 
             for (String son : this.outBuffers.getKeys()){
                 this.outBuffers.addPacket(son,info);
-                System.out.println("ControlWorker send grandfather reply: " + this.signature + " -> " + son);
+                System.out.println("ControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son);
             }
 
             // entrar em contacto com os meus avos
@@ -155,10 +149,11 @@ public class ControlWorker implements Runnable{
                 try {this.connectionBuffer.push(grandParent);}
                 catch (Exception e) {e.printStackTrace();}
             }
-
-            // deixei de ter avos
-            this.grandParents.clear();
         }
+
+        // o algoritmo funciona melhor se esquecer os pais sempre que alguem morrer
+        this.grandParents.clear();
+        this.blackList.clear();
     }
 
 
@@ -178,8 +173,12 @@ public class ControlWorker implements Runnable{
 
                     // o pai nao pode estar na lista negra
                     if (this.blackList.contains(parent) == false){
+
+                        this.blackList.add(parent);
+                        System.out.println("ControlWorker (trigger) add blacklist: " + parent);
+
                         this.outBuffers.addPacket(parent,requestGrandParents);
-                        System.out.println("ControlWorker send grandfather request: " + this.signature + " -> " + parent);
+                        System.out.println("ControlWorker (trigger) send grandfather request: " + this.signature + " -> " + parent);
                     }
                 }
             }
