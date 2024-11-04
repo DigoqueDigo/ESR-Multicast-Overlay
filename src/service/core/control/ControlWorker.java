@@ -56,19 +56,18 @@ public class ControlWorker implements Runnable{
             String identifier = sender + serverTimeStamp.toString();
 
             if (this.history.contains(identifier) == false){
-
                 this.history.add(identifier);
                 this.parents.addParent(tcpFloodPacket.getSender(),delay);
+            }
 
-                // adicionar a minha assinatura ao pacote de control flood
-                tcpFloodPacket.addSignature(signature);
+            // adicionar a minha assinatura ao pacote de control flood
+            tcpFloodPacket.addSignature(signature);
 
-                // enviar o pacote para todas as interfaces execeto a do sender
-                for (String neighbour : this.outBuffers.getKeys()){
-                    if (neighbour.equals(sender) == false){
-                        this.outBuffers.addPacket(neighbour,tcpFloodPacket);
-                        System.out.println("ControlWorker send flood: " + this.signature + " -> " + neighbour);
-                    }
+            // enviar o pacote para todas as interfaces execeto a do sender
+            for (String neighbour : this.outBuffers.getKeys()){
+                if (neighbour.equals(sender) == false){
+                    this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+                    System.out.println("ControlWorker send flood: " + this.signature + " -> " + neighbour);
                 }
             }
         }
