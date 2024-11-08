@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 
-public class TCPConnectionStatePacket extends TCPPacket {
+public class TCPConnectionStatePacket extends TCPPacket{
 
     public enum CS_PROTOCOL{
         CONNECTION_LOST
@@ -14,17 +14,20 @@ public class TCPConnectionStatePacket extends TCPPacket {
 
     private CS_PROTOCOL protocol;
 
-    public TCPConnectionStatePacket() {}
+
+    public TCPConnectionStatePacket(){
+        super(TCP_TYPE.CONNECTION_STATE);
+    }
 
 
     public TCPConnectionStatePacket(CS_PROTOCOL protocol, String receiver, String sender) {
-        super(TYPE.CONNECTION_STATE, receiver, sender);
+        super(TCP_TYPE.CONNECTION_STATE, receiver, sender);
         this.protocol = protocol;
     }
 
 
     public TCPConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
-        super(TYPE.CONNECTION_STATE, tcpStatePacket.getReceiver(), tcpStatePacket.getSender());
+        super(TCP_TYPE.CONNECTION_STATE, tcpStatePacket.getReceiver(), tcpStatePacket.getSender());
         this.protocol = tcpStatePacket.getProtocol();
     }
 
@@ -54,7 +57,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
         kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
         kryo.writeObject(output,this);
@@ -72,7 +75,7 @@ public class TCPConnectionStatePacket extends TCPPacket {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
         kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
 

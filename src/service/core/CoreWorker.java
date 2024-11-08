@@ -1,6 +1,6 @@
 package service.core;
 import packet.tcp.TCPPacket;
-import packet.tcp.TCPPacket.TYPE;
+import packet.tcp.TCPPacket.TCP_TYPE;
 import service.core.struct.BoundedBuffer;
 
 
@@ -24,7 +24,7 @@ public class CoreWorker implements Runnable{
 
             while ((tcpPacket =this.inBuffer.pop()) != null){
 
-                TYPE type = tcpPacket.getType();
+                TCP_TYPE type = tcpPacket.getType();
                 System.out.println("CoreWorker received packet:\n" + tcpPacket);
 
                 switch (type){

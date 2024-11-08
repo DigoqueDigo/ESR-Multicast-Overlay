@@ -1,71 +1,46 @@
 package packet.tcp;
+import packet.Packet;
 
 
-public abstract class TCPPacket{
+public abstract class TCPPacket extends Packet{
 
-    public enum TYPE {
+    public enum TCP_TYPE {
         BOOTSTRAPPER,
         CONNECTION_STATE,
         CONTROL_FLOOD,
         CONTROL_GRANDFATHER
     }
 
-    private TYPE type;
-    private String sender;
-    private String receiver;
+    private TCP_TYPE type;
 
 
-    public TCPPacket() {}
-
-
-    public TCPPacket(TYPE type){
+    public TCPPacket(TCP_TYPE type){
+        super();
         this.type = type;
-        this.sender = new String();
-        this.receiver = new String();
     }
 
 
-    public TCPPacket(TYPE type, String receiver, String sender){
+    public TCPPacket(TCP_TYPE type, String receiver, String sender){
+        super(receiver,sender);
         this.type = type;
-        this.sender = sender;
-        this.receiver = receiver;
     }
 
 
-    public TYPE getType(){
+    public TCP_TYPE getType(){
         return this.type;
     }
 
 
-    public String getSender(){
-        return this.sender;
-    }
-
-
-    public String getReceiver(){
-        return this.receiver;
-    }
-
-
-    public void setSender(String sender){
-        this.sender = sender;
-    }
-
-
-    public void setReceiver(String receiver){
-        this.receiver = receiver;
-    }
+    public abstract TCPPacket clone();
 
 
     public abstract byte[] serialize();
 
-    public abstract TCPPacket clone();
 
     public String toString(){
         StringBuilder buffer = new StringBuilder();
         buffer.append("Type: ").append(this.type.name());
-        buffer.append("\tSender: ").append(this.sender);
-        buffer.append("\tReceiver: ").append(this.receiver);
+        buffer.append(super.toString());
         return buffer.toString();
     }
 }

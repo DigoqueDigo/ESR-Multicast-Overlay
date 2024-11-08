@@ -12,19 +12,18 @@ import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
-import packet.tcp.TCPPacket.TYPE;
 
 
 public class TCPCarrier{
 
-    private static Map<TYPE,Function<byte[],TCPPacket>> deserializeMap = new HashMap<>();
+    private static Map<Class<?>,Function<byte[],TCPPacket>> deserializeMap = new HashMap<>();
 
     static{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
-        deserializeMap.put(TYPE.BOOTSTRAPPER, x -> TCPBootstrapperPacket.deserialize(x));
-        deserializeMap.put(TYPE.CONTROL_FLOOD, x -> TCPFloodControlPacket.deserialize(x));
-        deserializeMap.put(TYPE.CONTROL_GRANDFATHER, x -> TCPGrandfatherControlPacket.deserialize(x));
-        deserializeMap.put(TYPE.CONNECTION_STATE, x -> TCPConnectionStatePacket.deserialize(x));
+        deserializeMap.put(TCPBootstrapperPacket.class, x -> TCPBootstrapperPacket.deserialize(x));
+        deserializeMap.put(TCPFloodControlPacket.class, x -> TCPFloodControlPacket.deserialize(x));
+        deserializeMap.put(TCPGrandfatherControlPacket.class, x -> TCPGrandfatherControlPacket.deserialize(x));
+        deserializeMap.put(TCPConnectionStatePacket.class, x -> TCPConnectionStatePacket.deserialize(x));
     }
 
     private DataInputStream dataInputStream;
@@ -39,16 +38,16 @@ public class TCPCarrier{
 
     public void send(TCPPacket tcpPacket) throws IOException{
         byte[] data = tcpPacket.serialize();
-        this.dataOutputStream.writeUTF(tcpPacket.getType().name());
+        this.dataOutputStream.writeUTF(tcpPacket.getClass().getCanonicalName());
         this.dataOutputStream.writeInt(data.length);
         this.dataOutputStream.write(data);
         this.dataOutputStream.flush();
     }
 
 
-    public TCPPacket receive() throws IOException{
+    public TCPPacket receive() throws IOException, ClassNotFoundException{
 
-        TYPE type = TYPE.valueOf(this.dataInputStream.readUTF());
+        Class<?> clazz = Class.forName(this.dataInputStream.readUTF());
         int data_size = this.dataInputStream.readInt();
         byte data[] = new byte[data_size];
 
@@ -56,7 +55,7 @@ public class TCPCarrier{
             throw new IOException("TCP packet reading incomplete");
         }
 
-        return deserializeMap.get(type).apply(data);
+        return deserializeMap.get(clazz).apply(data);
     }
 
 

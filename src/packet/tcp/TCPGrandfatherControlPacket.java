@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class TCPGrandfatherControlPacket extends TCPPacket {
+public class TCPGrandfatherControlPacket extends TCPPacket{
 
     public enum GF_PROTOCOL{
         GRANDFATHER_REQUEST,
@@ -20,18 +20,20 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
     private Set<String> grandparents;
 
 
-    public TCPGrandfatherControlPacket() {}
+    public TCPGrandfatherControlPacket(){
+        super(TCP_TYPE.CONTROL_GRANDFATHER);
+    }
 
 
     public TCPGrandfatherControlPacket(GF_PROTOCOL protocol) {
-        super(TYPE.CONTROL_GRANDFATHER);
+        super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.grandparents = new HashSet<>();
     }
 
 
     public TCPGrandfatherControlPacket(GF_PROTOCOL protocol, Set<String> grandparents) {
-        super(TYPE.CONTROL_GRANDFATHER);
+        super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.grandparents = new HashSet<>(grandparents);
     }
@@ -77,7 +79,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(HashSet.class);
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
         kryo.register(TCPGrandfatherControlPacket.GF_PROTOCOL.class);
         kryo.writeObject(output,this);
@@ -96,7 +98,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket {
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(HashSet.class);
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
         kryo.register(TCPGrandfatherControlPacket.GF_PROTOCOL.class);
 

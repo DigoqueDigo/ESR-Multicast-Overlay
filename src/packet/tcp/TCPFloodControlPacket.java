@@ -9,18 +9,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class TCPFloodControlPacket extends TCPPacket {
+public class TCPFloodControlPacket extends TCPPacket{
 
     private String serverName;
     private long timestamp;
     private List<String> signatures;
 
 
-    public TCPFloodControlPacket() {}
+    public TCPFloodControlPacket(){
+        super(TCP_TYPE.CONTROL_FLOOD);
+    }
 
 
     public TCPFloodControlPacket(String serverName) {
-        super(TYPE.CONTROL_FLOOD);
+        super(TCP_TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = System.nanoTime();
         this.signatures = new ArrayList<>();
@@ -28,7 +30,7 @@ public class TCPFloodControlPacket extends TCPPacket {
 
 
     public TCPFloodControlPacket(String serverName, long timestamp) {
-        super(TYPE.CONTROL_FLOOD);
+        super(TCP_TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = timestamp;
         this.signatures = new ArrayList<>();
@@ -87,7 +89,7 @@ public class TCPFloodControlPacket extends TCPPacket {
         Output output = new Output(byteArrayOutputStream);
 
         kryo.register(ArrayList.class);
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPFloodControlPacket.class);
         kryo.writeObject(output,this);
 
@@ -105,7 +107,7 @@ public class TCPFloodControlPacket extends TCPPacket {
         Input input = new Input(byteArrayInputStream);
 
         kryo.register(ArrayList.class);
-        kryo.register(TCPPacket.TYPE.class);
+        kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPFloodControlPacket.class);
 
         TCPFloodControlPacket packet = kryo.readObject(input,TCPFloodControlPacket.class);
