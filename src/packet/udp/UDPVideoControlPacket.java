@@ -15,6 +15,8 @@ public class UDPVideoControlPacket extends UDPPacket{
     }
 
     private VIDEO_PROTOCOL protocol;
+    //To be added later
+    //private String stream_id;
 
 
     public UDPVideoControlPacket(){

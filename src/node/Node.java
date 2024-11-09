@@ -1,11 +1,13 @@
 package node;
 import org.json.JSONObject;
 import packet.tcp.TCPPacket;
+import packet.udp.UDPVideoControlPacket;
 import service.core.CoreWorker;
 import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.OutBuffers;
 import service.core.struct.Parents;
+import service.establishconnection.ClientWaitEstablishConnection;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
@@ -22,6 +24,14 @@ public class Node {
 
         String nodeName = args[0];
         String bootstrapperIP = args[1];
+        boolean isEdge;
+        if (args.length > 2) {
+            //If edge arg is given, node is considered edge and clientconnection service is established
+            isEdge = args[2].equals("edge");
+        }
+        else {
+            isEdge = false;
+        }
 
         BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
@@ -36,6 +46,7 @@ public class Node {
         Parents parents = new Parents();
         OutBuffers outBuffers = new OutBuffers();
 
+
         Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(inBuffer,outBuffers));
         Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers));
 
@@ -47,6 +58,13 @@ public class Node {
         coreWorker.start();
         controlWorker.start();
 
+        //If edge node, create service that clients can contact
+        Thread clientWaitEstablishConnection = null;
+        if (isEdge) {
+            clientWaitEstablishConnection = new Thread(new ClientWaitEstablishConnection());
+            clientWaitEstablishConnection.start();
+        }
+
         for (String neighbour : neighbours){
             connectionBuffer.push(neighbour);
         }
@@ -55,5 +73,8 @@ public class Node {
         floodEstablishConnection.join();
         coreWorker.join();
         controlWorker.join();
+        if (isEdge) {
+            clientWaitEstablishConnection.join();
+        }
     }
 }
