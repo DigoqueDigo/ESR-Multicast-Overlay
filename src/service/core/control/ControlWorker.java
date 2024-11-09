@@ -7,8 +7,8 @@ import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
-import packet.tcp.TCPConnectionStatePacket.CS_PROTOCOL;
-import packet.tcp.TCPGrandfatherControlPacket.GF_PROTOCOL;
+import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
+import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.OutBuffers;
 import service.core.struct.Parents;
@@ -79,17 +79,17 @@ public class ControlWorker implements Runnable{
 
 
     private void handleGrandFatherPacket(TCPGrandfatherControlPacket tcpGrandfatherPacket){
-        if (tcpGrandfatherPacket.getProtocol() == GF_PROTOCOL.GRANDFATHER_REPLY){
+        if (tcpGrandfatherPacket.getProtocol() == GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY){
             this.handleGrandFatherReply(tcpGrandfatherPacket);
         }
-        else if (tcpGrandfatherPacket.getProtocol() == GF_PROTOCOL.GRANDFATHER_REQUEST){
+        else if (tcpGrandfatherPacket.getProtocol() == GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST){
             this.handleGrandFatherRequest(tcpGrandfatherPacket);
         }
     }
 
 
     private void handleConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
-        if (tcpStatePacket.getProtocol() == CS_PROTOCOL.CONNECTION_LOST){
+        if (tcpStatePacket.getProtocol() == CONNECTION_STATE_PROTOCOL.CONNECTION_LOST){
             this.handleConnectionLost(tcpStatePacket);
         }
     }
@@ -104,7 +104,7 @@ public class ControlWorker implements Runnable{
         parents.remove(sender);
 
         // criar um pacote com os meus pais e enviar ao filho
-        TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REPLY,parents);
+        TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,parents);
         this.outBuffers.addPacket(sender,reply);
 
         System.out.println("ControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
@@ -136,7 +136,7 @@ public class ControlWorker implements Runnable{
             // os meus avos agora sao os meus pais
             // informar os meus filhos que o avo deles morreu
             TCPGrandfatherControlPacket info = new TCPGrandfatherControlPacket(
-                GF_PROTOCOL.GRANDFATHER_REPLY, this.grandParents);
+                GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, this.grandParents);
 
             for (String son : this.outBuffers.getKeys()){
                 this.outBuffers.addPacket(son,info);
@@ -159,7 +159,7 @@ public class ControlWorker implements Runnable{
     private void requestGrandParends(){
 
         TCPGrandfatherControlPacket requestGrandParents =
-            new TCPGrandfatherControlPacket(GF_PROTOCOL.GRANDFATHER_REQUEST);
+            new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST);
 
         // nunca faco um pedido nas primeiras iteracoes de flood
         if (this.history.size() > 1){
@@ -194,7 +194,7 @@ public class ControlWorker implements Runnable{
             while ((tcpPacket = this.controlBuffer.pop()) != null){
 
                 // sempre que recebo um pacote verifico se nenhum dos pais é zombie
-                this.parents.getZombies().forEach(x -> {this.parents.removeParent(x); System.out.println("AQUI");});
+                this.parents.getZombies().forEach(x -> this.parents.removeParent(x));
 
                 switch (tcpPacket.getType()){
 

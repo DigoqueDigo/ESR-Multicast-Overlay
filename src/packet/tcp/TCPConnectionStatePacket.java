@@ -8,11 +8,11 @@ import java.io.ByteArrayOutputStream;
 
 public class TCPConnectionStatePacket extends TCPPacket{
 
-    public enum CS_PROTOCOL{
+    public enum CONNECTION_STATE_PROTOCOL{
         CONNECTION_LOST
     }
 
-    private CS_PROTOCOL protocol;
+    private CONNECTION_STATE_PROTOCOL protocol;
 
 
     public TCPConnectionStatePacket(){
@@ -20,7 +20,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
     }
 
 
-    public TCPConnectionStatePacket(CS_PROTOCOL protocol, String receiver, String sender) {
+    public TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL protocol, String receiver, String sender) {
         super(TCP_TYPE.CONNECTION_STATE, receiver, sender);
         this.protocol = protocol;
     }
@@ -37,7 +37,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
     }
 
 
-    public CS_PROTOCOL getProtocol() {
+    public CONNECTION_STATE_PROTOCOL getProtocol() {
         return this.protocol;
     }
 
@@ -45,7 +45,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tPROTOCOL: ").append(this.protocol.name());
+        buffer.append("\tProtocol: ").append(this.protocol.name());
         return buffer.toString();
     }
 
@@ -59,7 +59,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
 
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
-        kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
+        kryo.register(TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -77,7 +77,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
 
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPConnectionStatePacket.class);
-        kryo.register(TCPConnectionStatePacket.CS_PROTOCOL.class);
+        kryo.register(TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL.class);
 
         TCPConnectionStatePacket packet = kryo.readObject(input,TCPConnectionStatePacket.class);
         input.close();

@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class TCPGrandfatherControlPacket extends TCPPacket{
 
-    public enum GF_PROTOCOL{
+    public enum GRANDFATHER_PROTOCOL{
         GRANDFATHER_REQUEST,
         GRANDFATHER_REPLY
     }
 
-    private GF_PROTOCOL protocol;
+    private GRANDFATHER_PROTOCOL protocol;
     private Set<String> grandparents;
 
 
@@ -25,14 +25,14 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     }
 
 
-    public TCPGrandfatherControlPacket(GF_PROTOCOL protocol) {
+    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol) {
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.grandparents = new HashSet<>();
     }
 
 
-    public TCPGrandfatherControlPacket(GF_PROTOCOL protocol, Set<String> grandparents) {
+    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, Set<String> grandparents) {
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.grandparents = new HashSet<>(grandparents);
@@ -51,7 +51,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     }
 
 
-    public GF_PROTOCOL getProtocol(){
+    public GRANDFATHER_PROTOCOL getProtocol(){
         return this.protocol;
     }
 
@@ -81,7 +81,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         kryo.register(HashSet.class);
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
-        kryo.register(TCPGrandfatherControlPacket.GF_PROTOCOL.class);
+        kryo.register(TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -100,7 +100,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         kryo.register(HashSet.class);
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
-        kryo.register(TCPGrandfatherControlPacket.GF_PROTOCOL.class);
+        kryo.register(TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL.class);
 
         TCPGrandfatherControlPacket packet = kryo.readObject(input,TCPGrandfatherControlPacket.class);
         input.close();
