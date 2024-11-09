@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 public class Parents{
 
+    private static final double NEW_TIMESTAMP_WEIGHT = 0.25;
+    private static final double CURRENT_RATING_WEIGHT = 0.75;
     // o pai é dado como morto se não for atualizado em 15 segundos
     private static final Long ZOMBIE =  20_000_000_000L;
 
@@ -23,6 +25,8 @@ public class Parents{
 
 
     public void addParent(String parent, Long timestamp){
+        this.parentsTimestamp.putIfAbsent(parent,timestamp);
+        double rating = this.parentsTimestamp.get(parent) * CURRENT_RATING_WEIGHT + timestamp * NEW_TIMESTAMP_WEIGHT;
         this.parentsTimestamp.put(parent,timestamp);
         this.parentsUpdate.put(parent,System.nanoTime());
     }

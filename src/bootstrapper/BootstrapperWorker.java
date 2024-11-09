@@ -1,6 +1,8 @@
 package bootstrapper;
 import java.io.IOException;
 import java.net.Socket;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import carrier.TCPCarrier;
 import packet.tcp.TCPBootstrapperPacket;
@@ -25,9 +27,14 @@ public class BootstrapperWorker implements Runnable{
     public void run(){
 
         try{
-
+            JSONObject content;
             TCPBootstrapperPacket tcpBootstrapperPacket = (TCPBootstrapperPacket) this.tcpCarrier.receive();
-            JSONObject content = this.jsonObject.getJSONObject(tcpBootstrapperPacket.getNode());
+            try {
+                content = this.jsonObject.getJSONObject(tcpBootstrapperPacket.getNode());
+            }
+            catch (JSONException e) {
+                content = new JSONObject();
+            }
 
             tcpBootstrapperPacket.setJsonObject(content);
             this.tcpCarrier.send(tcpBootstrapperPacket);
