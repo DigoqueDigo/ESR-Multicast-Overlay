@@ -42,31 +42,37 @@
         "neighbours": [
             "10.0.8.2",
             "10.0.9.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O2": {
         "neighbours": [
             "10.0.10.2",
             "10.0.15.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O3": {
         "neighbours": [
             "10.0.8.2"
-        ]
+        ],
+        "edge":true
     },
 
     "O4": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     },
 
     "O5": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     },
 
     "O6": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     }
 }

@@ -31,7 +31,7 @@ public class Client {
         String neighbour = neighbours.get(0);
 
         try (DatagramSocket socket = new DatagramSocket(CLIENT_CONNECTION_PORT)){
-            
+
         UDPVideoControlPacket packet = new UDPVideoControlPacket(UDPVideoControlPacket.VIDEO_PROTOCOL.REQUEST,neighbour,"");
         DatagramPacket udp_packet = new DatagramPacket(packet.serialize(),packet.serialize().length, InetAddress.getByName(packet.getReceiver()),CLIENT_CONNECTION_PORT);
         socket.send(udp_packet);

@@ -24,20 +24,15 @@ public class Node {
 
         String nodeName = args[0];
         String bootstrapperIP = args[1];
-        boolean isEdge;
-        if (args.length > 2) {
-            //If edge arg is given, node is considered edge and clientconnection service is established
-            isEdge = args[2].equals("edge");
-        }
-        else {
-            isEdge = false;
-        }
 
         BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
 
         List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
             .toList().stream().map(Object::toString).collect(Collectors.toList());
+
+        boolean isEdge = bootstrapperInfo.getBoolean("edge");
+        System.out.println("EDGE STATUS: " + isEdge);
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);

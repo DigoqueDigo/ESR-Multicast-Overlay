@@ -51,57 +51,67 @@
     "O1": {
         "neighbours": [
             "10.0.7.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O2": {
         "neighbours": [
             "10.0.4.2",
             "10.0.33.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O3": {
         "neighbours": [
             "10.0.29.2",
             "10.0.16.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O4": {
         "neighbours": [
             "10.0.33.2",
             "10.0.22.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O5": {
         "neighbours": [
             "10.0.27.1",
             "10.0.17.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O6": {
         "neighbours": [
             "10.0.15.2",
             "10.0.16.2"
-        ]
+        ],
+        "edge":false
     },
 
     "O7": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     },
 
     "O8": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     },
 
     "O9": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     },
 
     "O10": {
-        "neighbours": []
+        "neighbours": [],
+        "edge":true
     }
 }
