@@ -31,6 +31,8 @@ public class Client{
         UDPVideoControlPacket videoControlPacket = new UDPVideoControlPacket(VIDEO_PROTOCOL.REQUEST, "videoA.mp4");
         InetSocketAddress socketAddress = new InetSocketAddress(neighbour,ClientWaitEstablishConnection.CLIENT_CONNECTION_PORT);
 
+        System.out.println("Sending packet: " + videoControlPacket);
+
         udpCarrier.connect(socketAddress);
         udpCarrier.send(videoControlPacket);
         udpCarrier.disconnect();

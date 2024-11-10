@@ -55,7 +55,7 @@ public class UDPAckPacket extends UDPPacket{
     }
 
 
-    public static UDPVideoControlPacket deserialize(byte[] data) {
+    public static UDPAckPacket deserialize(byte[] data) {
 
         Kryo kryo = new Kryo();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
@@ -64,9 +64,9 @@ public class UDPAckPacket extends UDPPacket{
         kryo.register(UDPPacket.UDP_TYPE.class);
         kryo.register(UDPAckPacket.class);
 
-        UDPVideoControlPacket packet = kryo.readObject(input,UDPVideoControlPacket.class);
+        UDPAckPacket packet = kryo.readObject(input,UDPAckPacket.class);
         input.close();
 
         return packet;
-    }   
+    }
 }

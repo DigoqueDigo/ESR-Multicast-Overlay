@@ -39,8 +39,8 @@ public class UDPCarrier{
     }
 
 
-    public void bind(SocketAddress socketAddress) throws SocketException{
-        this.socket.bind(socketAddress);
+    public UDPCarrier(SocketAddress socketAddress) throws SocketException{
+        this.socket = new DatagramSocket(socketAddress);
     }
 
 
@@ -158,9 +158,11 @@ public class UDPCarrier{
 
                     result = receiveUDPPacket;
                     result.setSender(receivePacket.getAddress().getHostAddress());
-                    result.setReceiver(receivePacket.getAddress().getHostAddress());
+                    result.setReceiver(this.socket.getLocalAddress().getHostAddress());
                 }
 
+                byte[] ack_data = this.prepare_serialize(udpAckPacket);
+                ackPacket.setData(ack_data);
                 this.socket.send(ackPacket);
             }
 
