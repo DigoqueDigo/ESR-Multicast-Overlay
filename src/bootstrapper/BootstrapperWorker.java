@@ -29,11 +29,12 @@ public class BootstrapperWorker implements Runnable{
         try{
             JSONObject content;
             TCPBootstrapperPacket tcpBootstrapperPacket = (TCPBootstrapperPacket) this.tcpCarrier.receive();
+            
             try {
                 content = this.jsonObject.getJSONObject(tcpBootstrapperPacket.getNode());
             }
             catch (JSONException e) {
-                content = new JSONObject();
+                content = null;
             }
 
             tcpBootstrapperPacket.setJsonObject(content);

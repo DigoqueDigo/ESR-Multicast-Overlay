@@ -30,9 +30,6 @@ public class BootstrapperGather {
 
             TCPBootstrapperPacket response = (TCPBootstrapperPacket) tcpCarrier.receive();
             socket.close();
-            if (response.getJsonObject().isEmpty()){
-                throw new Exception("Received empty JSONObject! Check client name given in args");
-            }
 
             return response.getJsonObject();
         }

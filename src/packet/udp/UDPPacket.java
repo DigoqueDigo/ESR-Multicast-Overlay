@@ -5,7 +5,8 @@ import packet.Packet;
 public abstract class UDPPacket extends Packet{
 
     public enum UDP_TYPE{
-        CONTROL_VIDEO
+        CONTROL_VIDEO,
+        ACK
     }
 
     private UDP_TYPE type;

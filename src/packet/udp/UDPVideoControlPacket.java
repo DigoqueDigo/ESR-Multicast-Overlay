@@ -14,28 +14,33 @@ public class UDPVideoControlPacket extends UDPPacket{
         CANCEL
     }
 
+    // video == stream_id
+    private String video;
     private VIDEO_PROTOCOL protocol;
-    //To be added later
-    //private String stream_id;
 
 
     public UDPVideoControlPacket(){
         super(UDP_TYPE.CONTROL_VIDEO);
+        this.protocol = null;
+        this.video = new String();
     }
 
 
-    public UDPVideoControlPacket(VIDEO_PROTOCOL protocol, String receiver, String sender){
-        super(UDP_TYPE.CONTROL_VIDEO, receiver, sender);
+    public UDPVideoControlPacket(VIDEO_PROTOCOL protocol, String video){
+        super(UDP_TYPE.CONTROL_VIDEO);
         this.protocol = protocol;
+        this.video = video;
     }
 
 
     public UDPVideoControlPacket(UDPVideoControlPacket packet){
         super(UDP_TYPE.CONTROL_VIDEO, packet.getReceiver(), packet.getSender());
         this.protocol = packet.getProtocol();
+        this.video = packet.getVideo();
     }
 
 
+    @Override
     public UDPVideoControlPacket clone(){
         return new UDPVideoControlPacket(this);
     }
@@ -46,10 +51,16 @@ public class UDPVideoControlPacket extends UDPPacket{
     }
 
 
+    public String getVideo(){
+        return this.video;
+    }
+
+
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
         buffer.append("\tProtocol: ").append(this.protocol.name());
+        buffer.append("\tVideo: ").append(this.video);
         return buffer.toString();
     }
 

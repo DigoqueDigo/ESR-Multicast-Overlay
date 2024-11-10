@@ -1,9 +1,5 @@
 package service.core.stream;
-
-import packet.udp.UDPVideoControlPacket;
-
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
@@ -22,12 +18,14 @@ public class EdgeStreamWorker implements Runnable{
     @Override
     public void run(){
 
+        System.out.println(clientAddress);
+
         //Create new UDP socket that handles transmission to client
         try (DatagramSocket socket = new DatagramSocket(port)){
             //Send acknowledgement packet back to sender, for them to know the packet was not lost and the connection became finalized
-            UDPVideoControlPacket response = new UDPVideoControlPacket(UDPVideoControlPacket.VIDEO_PROTOCOL.REPLY, clientAddress.getHostName(), "");
-            DatagramPacket sendPacket = new DatagramPacket(response.serialize(), response.serialize().length, clientAddress, CLIENT_CONNECTION_PORT);
-            socket.send(sendPacket);
+        //    UDPVideoControlPacket response = new UDPVideoControlPacket(UDPVideoControlPacket.VIDEO_PROTOCOL.REPLY, clientAddress.getHostName(), "");
+          //  DatagramPacket sendPacket = new DatagramPacket(response.serialize(), response.serialize().length, clientAddress, CLIENT_CONNECTION_PORT);
+          //  socket.send(sendPacket);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

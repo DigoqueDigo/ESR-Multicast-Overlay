@@ -26,8 +26,8 @@ public class Parents{
 
     public void addParent(String parent, Long timestamp){
         this.parentsTimestamp.putIfAbsent(parent,timestamp);
-        double rating = this.parentsTimestamp.get(parent) * CURRENT_RATING_WEIGHT + timestamp * NEW_TIMESTAMP_WEIGHT;
-        this.parentsTimestamp.put(parent,timestamp);
+        long rating = Math.round(this.parentsTimestamp.get(parent) * CURRENT_RATING_WEIGHT + timestamp * NEW_TIMESTAMP_WEIGHT);
+        this.parentsTimestamp.put(parent,rating);
         this.parentsUpdate.put(parent,System.nanoTime());
     }
 

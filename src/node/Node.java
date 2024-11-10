@@ -1,7 +1,6 @@
 package node;
 import org.json.JSONObject;
 import packet.tcp.TCPPacket;
-import packet.udp.UDPVideoControlPacket;
 import service.core.CoreWorker;
 import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
@@ -40,7 +39,6 @@ public class Node {
 
         Parents parents = new Parents();
         OutBuffers outBuffers = new OutBuffers();
-
 
         Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(inBuffer,outBuffers));
         Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers));
