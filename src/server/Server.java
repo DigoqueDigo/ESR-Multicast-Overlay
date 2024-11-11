@@ -1,5 +1,6 @@
 package server;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -40,25 +41,26 @@ public class Server {
         Timer timer = new Timer();
         TimerTask controlFlood = new ControlFloodTimer(nodeName,outBuffers);
 
-        Thread waitEstablishConnection = new Thread(new WaitEstablishConnection(inBuffer,outBuffers));
-        Thread floodEstablishConnection = new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers));
+        List<Thread> workers = new ArrayList<>();
 
-        Thread coreWorker = new Thread(new CoreWorker(inBuffer,controlBuffer));
-        Thread controlWorker = new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers));
+        workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
+        workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));
 
-        waitEstablishConnection.start();
-        floodEstablishConnection.start();
-        coreWorker.start();
-        controlWorker.start();
+        workers.add( new Thread(new CoreWorker(inBuffer,controlBuffer)));
+        workers.add(new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers)));
+
         timer.schedule(controlFlood,ControlFloodTimer.delay,ControlFloodTimer.period);
+
+        for (Thread worker : workers){
+            worker.start();
+        }
 
         for (String neighbour : neighbours){
             connectionBuffer.push(neighbour);
         }
 
-        waitEstablishConnection.join();
-        floodEstablishConnection.join();
-        coreWorker.join();
-        controlWorker.join();
+        for (Thread worker : workers){
+            worker.join();
+        }
     }
 }
