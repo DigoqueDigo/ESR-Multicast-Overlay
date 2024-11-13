@@ -4,17 +4,17 @@ import java.net.Socket;
 import packet.tcp.TCPPacket;
 import service.core.connection.ConnectionWorker;
 import service.core.struct.BoundedBuffer;
-import service.core.struct.OutBuffers;
+import service.core.struct.MapBoundedBuffer;
 
 
 public class FloodEstablishConnection implements Runnable{
 
-    private OutBuffers outBuffers;
     private BoundedBuffer<TCPPacket> inBuffer;
     private BoundedBuffer<String> connectionBuffer;
+    private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public FloodEstablishConnection(BoundedBuffer<String> connectionBuffer, BoundedBuffer<TCPPacket> inBuffer, OutBuffers outBuffers){
+    public FloodEstablishConnection(BoundedBuffer<String> connectionBuffer, BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.connectionBuffer = connectionBuffer;
         this.outBuffers = outBuffers;
         this.inBuffer = inBuffer;
@@ -34,9 +34,9 @@ public class FloodEstablishConnection implements Runnable{
 
                     Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
                     String myInterface = socket.getLocalAddress().getHostAddress();
-                    this.outBuffers.addOutBuffer(neighbour);
+                    this.outBuffers.addBoundedBuffer(neighbour);
 
-                    BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
+                    BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
                     ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                     new Thread(connectionWorker).start();

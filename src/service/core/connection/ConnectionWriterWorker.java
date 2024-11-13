@@ -27,6 +27,7 @@ public class ConnectionWriterWorker implements Runnable{
             TCPCarrier tcpCarrier = new TCPCarrier(null,this.outputStream);
 
             while ((tcpPacket = this.outBuffer.pop()) != null){
+                tcpPacket = tcpPacket.clone();
                 tcpPacket.setSender(this.myInterface);
                 tcpCarrier.send(tcpPacket);
             }

@@ -11,7 +11,7 @@ import service.core.CoreWorker;
 import service.core.control.ControlFloodTimer;
 import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
-import service.core.struct.OutBuffers;
+import service.core.struct.MapBoundedBuffer;
 import service.core.struct.Parents;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
@@ -35,8 +35,9 @@ public class Server {
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
+        MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
+
         Parents parents = new Parents();
-        OutBuffers outBuffers = new OutBuffers();
 
         Timer timer = new Timer();
         TimerTask controlFlood = new ControlFloodTimer(nodeName,outBuffers);

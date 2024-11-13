@@ -4,18 +4,18 @@ import java.net.Socket;
 import packet.tcp.TCPPacket;
 import service.core.connection.ConnectionWorker;
 import service.core.struct.BoundedBuffer;
-import service.core.struct.OutBuffers;
+import service.core.struct.MapBoundedBuffer;
 
 
 public class WaitEstablishConnection implements Runnable{
 
     public static final int ESTABLISH_CONNECTION_PORT = 3000; 
 
-    private OutBuffers outBuffers;
     private BoundedBuffer<TCPPacket> inBuffer;
+    private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public WaitEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, OutBuffers outBuffers){
+    public WaitEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.inBuffer = inBuffer;
         this.outBuffers = outBuffers;
     }
@@ -33,9 +33,9 @@ public class WaitEstablishConnection implements Runnable{
 
                 String neighbour = socket.getInetAddress().getHostAddress();
                 String myInterface = socket.getLocalAddress().getHostAddress();
-                this.outBuffers.addOutBuffer(neighbour);
+                this.outBuffers.addBoundedBuffer(neighbour);
 
-                BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getOutBuffer(neighbour);
+                BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
                 ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
                 new Thread(connectionWorker).start();

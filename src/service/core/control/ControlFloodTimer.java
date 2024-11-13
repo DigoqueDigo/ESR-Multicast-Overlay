@@ -1,7 +1,8 @@
 package service.core.control;
 import java.util.TimerTask;
+import packet.tcp.TCPPacket;
 import packet.tcp.TCPFloodControlPacket;
-import service.core.struct.OutBuffers;
+import service.core.struct.MapBoundedBuffer;
 
 
 public class ControlFloodTimer extends TimerTask{
@@ -11,10 +12,10 @@ public class ControlFloodTimer extends TimerTask{
 
     private String serverName;
     private String signature;
-    private OutBuffers outBuffers;
+    private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ControlFloodTimer(String serverName, OutBuffers outBuffers){
+    public ControlFloodTimer(String serverName, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.serverName = serverName;
         this.signature = serverName;
         this.outBuffers = outBuffers;
@@ -29,7 +30,7 @@ public class ControlFloodTimer extends TimerTask{
         tcpFloodPacket.addSignature(this.signature);
 
         for (String neighbour : this.outBuffers.getKeys()){
-            this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+            this.outBuffers.put(neighbour,tcpFloodPacket);
             System.out.println("ControlFloodTimer send: " + this.signature + " -> " + neighbour);
         }
     }

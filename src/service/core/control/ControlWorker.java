@@ -10,7 +10,7 @@ import packet.tcp.TCPPacket;
 import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 import service.core.struct.BoundedBuffer;
-import service.core.struct.OutBuffers;
+import service.core.struct.MapBoundedBuffer;
 import service.core.struct.Parents;
 
 
@@ -25,12 +25,12 @@ public class ControlWorker implements Runnable{
     private Set<String> blackList;
     private Set<String> grandParents;
 
-    private OutBuffers outBuffers;
-    private BoundedBuffer<TCPPacket> controlBuffer;
     private BoundedBuffer<String> connectionBuffer;
+    private BoundedBuffer<TCPPacket> controlBuffer;
+    private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ControlWorker(String signature, Parents parents, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, OutBuffers outBuffers){
+    public ControlWorker(String signature, Parents parents, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.signature = signature;
         this.parents = parents;
         this.outBuffers = outBuffers;
@@ -66,7 +66,7 @@ public class ControlWorker implements Runnable{
             // enviar o pacote para todas as interfaces execeto a do sender
             for (String neighbour : this.outBuffers.getKeys()){
                 if (neighbour.equals(sender) == false){
-                    this.outBuffers.addPacket(neighbour,tcpFloodPacket);
+                    this.outBuffers.put(neighbour,tcpFloodPacket);
                     System.out.println("ControlWorker send flood: " + this.signature + " -> " + neighbour);
                 }
             }
@@ -105,7 +105,7 @@ public class ControlWorker implements Runnable{
 
         // criar um pacote com os meus pais e enviar ao filho
         TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,parents);
-        this.outBuffers.addPacket(sender,reply);
+        this.outBuffers.put(sender,reply);
 
         System.out.println("ControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
         System.out.println("ControlWorker (grandfather request) send grandfather reply: " + this.signature + " -> " + sender);
@@ -123,11 +123,11 @@ public class ControlWorker implements Runnable{
 
         // informar o ConnectionWriteWorker que a ligacao terminou
         String neighbour = tcpStatePacket.getSender();
-        this.outBuffers.addPacket(neighbour,tcpStatePacket);
+        this.outBuffers.put(neighbour,tcpStatePacket);
 
         // remover o neighbour dos pais e eliminar o buffer
         this.parents.removeParent(neighbour);
-        this.outBuffers.removeOutBuffer(neighbour);
+        this.outBuffers.removeBoundedBuffer(neighbour);
         System.out.println("ControlWorker (connection lost) remove neighbour: " + neighbour);
 
         // se perdi a conexao com todos os pais, informar os filhos e contactar os avos
@@ -139,7 +139,7 @@ public class ControlWorker implements Runnable{
                 GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, this.grandParents);
 
             for (String son : this.outBuffers.getKeys()){
-                this.outBuffers.addPacket(son,info);
+                this.outBuffers.put(son,info);
                 System.out.println("ControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son);
             }
 
@@ -176,7 +176,7 @@ public class ControlWorker implements Runnable{
                         this.blackList.add(parent);
                         System.out.println("ControlWorker (trigger) add blacklist: " + parent);
 
-                        this.outBuffers.addPacket(parent,requestGrandParents);
+                        this.outBuffers.put(parent,requestGrandParents);
                         System.out.println("ControlWorker (trigger) send grandfather request: " + this.signature + " -> " + parent);
                     }
                 }
