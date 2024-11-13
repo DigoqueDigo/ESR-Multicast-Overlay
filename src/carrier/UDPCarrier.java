@@ -11,6 +11,7 @@ import packet.udp.UDPAckPacket;
 import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPPacket.UDP_TYPE;
+import utils.IO;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -91,7 +92,7 @@ public class UDPCarrier{
         int deserialize_size = dataInputStream.readInt();
         byte[] deserialize = new byte[deserialize_size];
 
-        if (IOUtils.readAllBytes(dataInputStream,deserialize,deserialize_size) != deserialize_size){
+        if (IO.readAllBytes(dataInputStream,deserialize,deserialize_size) != deserialize_size){
             throw new IOException("UDPPacket reading incomplete");
         }
 

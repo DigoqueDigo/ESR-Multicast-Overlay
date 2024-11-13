@@ -37,6 +37,7 @@ public class Node {
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
+        MapBoundedBuffer<String,byte[]> videoBuffers = new MapBoundedBuffer<>();
 
         Parents parents = new Parents();
 
@@ -49,7 +50,7 @@ public class Node {
         workers.add(new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers)));
 
         if (isEdge){
-            workers.add(new Thread(new ClientWaitEstablishConnection()));
+            workers.add(new Thread(new ClientWaitEstablishConnection(inBuffer,videoBuffers)));
         }
 
         for (Thread worker : workers){

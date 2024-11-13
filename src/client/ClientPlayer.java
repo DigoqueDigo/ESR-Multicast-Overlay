@@ -5,18 +5,19 @@ import java.awt.event.WindowAdapter;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
+import service.core.stream.StreamVlcjWorker;
 
 
 public class ClientPlayer implements Runnable{
 
-    public static final int CLIENT_STREAMING_PORT = 7000;
-
+    private boolean wasReleased;
     private final Object lock;
     private final JFrame frame;
     private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
 
 
     public ClientPlayer(String windowTitle){
+        this.wasReleased = false;
         this.lock = new Object();
         this.frame = new JFrame(windowTitle);
         this.mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
@@ -24,11 +25,12 @@ public class ClientPlayer implements Runnable{
 
 
     private void handleWindowClosing(){
-        synchronized (lock){
-            frame.setVisible(false);
-            mediaPlayerComponent.release(); 
-            frame.dispose();
-            lock.notify();
+        synchronized (this.lock){
+            this.frame.setVisible(false);
+            this.mediaPlayerComponent.release(); 
+            this.frame.dispose();
+            this.wasReleased = true;
+            this.lock.notify();
         }
     }
 
@@ -58,7 +60,7 @@ public class ClientPlayer implements Runnable{
                 }
             });
 
-            this.mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
+            this.mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(new MediaPlayerEventAdapter(){
 
                 public void playing(MediaPlayer mediaPlayer) {
                     handleVideoPlaying();
@@ -70,11 +72,11 @@ public class ClientPlayer implements Runnable{
             });
 
             this.frame.setVisible(true);
-            this.mediaPlayerComponent.mediaPlayer().media().play("rtp://0.0.0.0:" +  CLIENT_STREAMING_PORT);
+            this.mediaPlayerComponent.mediaPlayer().media().play("rtp://0.0.0.0:" + StreamVlcjWorker.STREAMING_PORT);
 
-            while (frame.isVisible()){
-                synchronized (lock){
-                    lock.wait();
+            while (this.wasReleased == false){
+                synchronized (this.lock){
+                    this.lock.wait();
                 }
             }
         }

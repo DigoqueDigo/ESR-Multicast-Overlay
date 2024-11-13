@@ -12,6 +12,7 @@ import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
+import utils.IO;
 
 
 public class TCPCarrier{
@@ -51,7 +52,7 @@ public class TCPCarrier{
         int data_size = this.dataInputStream.readInt();
         byte data[] = new byte[data_size];
 
-        if (IOUtils.readAllBytes(dataInputStream,data,data_size) != data_size){
+        if (IO.readAllBytes(dataInputStream,data,data_size) != data_size){
             throw new IOException("TCPPacket reading incomplete");
         }
 

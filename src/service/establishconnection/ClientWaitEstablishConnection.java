@@ -1,22 +1,24 @@
 package service.establishconnection;
+import packet.tcp.TCPPacket;
 import packet.udp.UDPPacket;
+import service.core.stream.StreamWorker;
+import service.core.struct.BoundedBuffer;
+import service.core.struct.MapBoundedBuffer;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import carrier.UDPCarrier;
 
 
 public class ClientWaitEstablishConnection implements Runnable{
 
-    public static final String CLIENT_ESTABLISH_CONNECTION_ADDRESS = "0.0.0.0";
     public static final int CLIENT_ESTABLISH_CONNECTION_PORT = 5000;
 
-    private UDPCarrier udpCarrier;
+//    private BoundedBuffer<TCPPacket> inBuffer;
+    private MapBoundedBuffer<String,byte[]> videoBuffers;
 
 
-    public ClientWaitEstablishConnection() throws SocketException{
-        InetSocketAddress socketAddress = new InetSocketAddress(
-            CLIENT_ESTABLISH_CONNECTION_ADDRESS,CLIENT_ESTABLISH_CONNECTION_PORT);
-        this.udpCarrier = new UDPCarrier(socketAddress);
+    public ClientWaitEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,byte[]> videoBuffers){
+ //       this.inBuffer  = inBuffer;
+        this.videoBuffers = videoBuffers;
     }
 
 
@@ -25,12 +27,26 @@ public class ClientWaitEstablishConnection implements Runnable{
         try{
 
             UDPPacket udpPacket;
+            InetSocketAddress socketAddress = new InetSocketAddress(CLIENT_ESTABLISH_CONNECTION_PORT);
+            UDPCarrier udpCarrier = new UDPCarrier(socketAddress);
+
             System.out.println("ClientWaitEstablishConnection service started");
 
-            while (this.udpCarrier.isClosed() == false){
+            while (udpCarrier.isClosed() == false){
 
                 if ((udpPacket = udpCarrier.receive()) != null){
+
                     System.out.println("ClientWaitEstablishConnection received packet: " + udpPacket);
+
+                    String client = udpPacket.getSender();
+                    this.videoBuffers.addBoundedBuffer(client);
+
+                    BoundedBuffer<byte[]> videoBuffer = this.videoBuffers.getBoundedBuffer(client);
+                    StreamWorker streamWorker = new StreamWorker(client,videoBuffer);
+
+                    new Thread(streamWorker).start();
+
+                    // converter o udpPacket para um formato TCP e espetar o gajo no inbuffer
                 }
             }
         }
