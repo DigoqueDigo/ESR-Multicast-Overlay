@@ -76,8 +76,8 @@ public class ClientUI{
                 String selectedVideo = this.select_option(video_prompt, warning, this.videos);
                 String selectedEdgeNode = this.select_option(edge_prompt, warning, this.edgeNodes);
 
-                ClientPlayer clientPlayer = new ClientPlayer(selectedEdgeNode,selectedVideo);
-                clientPlayer.play();
+                ClientConnection clientConnection = new ClientConnection(selectedEdgeNode,selectedVideo);
+                clientConnection.start();
             }
         }
 

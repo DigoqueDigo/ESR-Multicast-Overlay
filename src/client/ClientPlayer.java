@@ -1,40 +1,85 @@
 package client;
-import java.net.InetSocketAddress;
-import carrier.UDPCarrier;
-import packet.udp.UDPVideoControlPacket;
-import packet.udp.UDPVideoControlPacket.VIDEO_PROTOCOL;
-import service.establishconnection.ClientWaitEstablishConnection;
+import javax.swing.JFrame;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowAdapter;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
+import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
+import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
 
 
-public class ClientPlayer{
+public class ClientPlayer implements Runnable{
 
-    private String edgeNode;
-    private String video;
+    public static final int CLIENT_STREAMING_PORT = 7000;
+
+    private final Object lock;
+    private final JFrame frame;
+    private final EmbeddedMediaPlayerComponent mediaPlayerComponent;
 
 
-    public ClientPlayer(String edgeNode, String video){
-        this.edgeNode = edgeNode;
-        this.video = video; 
+    public ClientPlayer(String windowTitle){
+        this.lock = new Object();
+        this.frame = new JFrame(windowTitle);
+        this.mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
     }
 
 
-    public void play(){
+    private void handleWindowClosing(){
+        synchronized (lock){
+            frame.setVisible(false);
+            mediaPlayerComponent.release(); 
+            frame.dispose();
+            lock.notify();
+        }
+    }
+
+
+    private void handleVideoPlaying(){
+        System.out.println("Playing video");
+    }
+
+
+    private void handleVideoError(){
+        System.err.println("Video error");
+    }
+
+
+    public void run(){
 
         try{
 
-            UDPCarrier udpCarrier = new UDPCarrier();
-            UDPVideoControlPacket videoControlPacket = new UDPVideoControlPacket(VIDEO_PROTOCOL.REQUEST,this.video);
-            InetSocketAddress socketAddress = new InetSocketAddress(this.edgeNode,ClientWaitEstablishConnection.CLIENT_CONNECTION_PORT);
+            this.frame.setLocation(100,100);
+            this.frame.setSize(600,400);
+            this.frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            this.frame.setContentPane(this.mediaPlayerComponent);
 
-            System.out.println("Sending packet: " + videoControlPacket);
+            this.frame.addWindowListener(new WindowAdapter(){
+                public void windowClosing(WindowEvent e) {
+                    handleWindowClosing();
+                }
+            });
 
-            udpCarrier.connect(socketAddress);
-            udpCarrier.send(videoControlPacket);
-            udpCarrier.disconnect();
-            udpCarrier.close();
+            this.mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
+
+                public void playing(MediaPlayer mediaPlayer) {
+                    handleVideoPlaying();
+                }
+
+                public void error(MediaPlayer mediaPlayer) {
+                    handleVideoError();
+                }
+            });
+
+            this.frame.setVisible(true);
+            this.mediaPlayerComponent.mediaPlayer().media().play("rtp://0.0.0.0:" +  CLIENT_STREAMING_PORT);
+
+            while (frame.isVisible()){
+                synchronized (lock){
+                    lock.wait();
+                }
+            }
         }
 
-        catch (Exception e){
+        catch (InterruptedException e){
             e.printStackTrace();
         }
     }

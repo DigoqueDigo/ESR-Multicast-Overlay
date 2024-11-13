@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 
 public class Node {
 
-    public static final int PORT = 3000;
-
     public static void main(String[] args) throws InterruptedException, IOException {
 
         String nodeName = args[0];

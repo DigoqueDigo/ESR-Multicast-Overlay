@@ -123,20 +123,22 @@ public class UDPCarrier{
                 byte[] receive_data = receivePacket.getData();
                 UDPPacket receiveUDPPacket = this.prepare_deserialize(receive_data);
 
-                if (receiveUDPPacket.getType() == UDP_TYPE.ACK){
+                if (receiveUDPPacket.getType() == UDP_TYPE.ACK && receiveUDPPacket.getID() == udpPacket.getID()){
                     condition = false;
+                    System.out.println("UDPCarrier: receive ACK");
                 }
             }
 
-            catch (SocketTimeoutException e) {}
+            catch (SocketTimeoutException e){
+            }
         }
     }
 
 
     public UDPPacket receive() throws SocketException, IOException, ClassNotFoundException{
 
-        UDPPacket result = null;
         boolean condition = true;
+        UDPPacket udpResultPacket = null;
         UDPAckPacket udpAckPacket = null;
 
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
@@ -151,19 +153,27 @@ public class UDPCarrier{
                 byte[] receive_data = receivePacket.getData();
                 UDPPacket receiveUDPPacket = this.prepare_deserialize(receive_data);
 
-                if (udpAckPacket == null){
+                if (udpResultPacket == null && udpAckPacket == null){
+
+                    udpResultPacket = receiveUDPPacket;
+                    udpResultPacket.setSender(receivePacket.getAddress().getHostAddress());
+                    udpResultPacket.setReceiver(this.socket.getLocalAddress().getHostAddress());
 
                     udpAckPacket = new UDPAckPacket();
+                    udpAckPacket.setID(udpResultPacket.getID());
                     this.socket.connect(receivePacket.getAddress(), receivePacket.getPort());
-
-                    result = receiveUDPPacket;
-                    result.setSender(receivePacket.getAddress().getHostAddress());
-                    result.setReceiver(this.socket.getLocalAddress().getHostAddress());
                 }
 
-                byte[] ack_data = this.prepare_serialize(udpAckPacket);
-                ackPacket.setData(ack_data);
-                this.socket.send(ackPacket);
+                if (receiveUDPPacket.getID() == udpResultPacket.getID()){
+                    ackPacket.setData(this.prepare_serialize(udpAckPacket));
+                    this.socket.send(ackPacket);
+                    System.out.println("UDPCarrrier: send ACK");
+                }
+
+                else{
+                    condition = false;
+                    this.socket.disconnect();
+                }
             }
 
             catch (SocketTimeoutException e){
@@ -172,6 +182,6 @@ public class UDPCarrier{
             }
         }
 
-        return result;
+        return udpResultPacket;
     }
 }

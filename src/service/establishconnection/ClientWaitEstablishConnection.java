@@ -7,14 +7,15 @@ import carrier.UDPCarrier;
 
 public class ClientWaitEstablishConnection implements Runnable{
 
-    public static final String CLIENT_CONNECTION_ADDRESS = "0.0.0.0";
-    public static final int CLIENT_CONNECTION_PORT = 5000;
+    public static final String CLIENT_ESTABLISH_CONNECTION_ADDRESS = "0.0.0.0";
+    public static final int CLIENT_ESTABLISH_CONNECTION_PORT = 5000;
 
     private UDPCarrier udpCarrier;
 
 
     public ClientWaitEstablishConnection() throws SocketException{
-        InetSocketAddress socketAddress = new InetSocketAddress(CLIENT_CONNECTION_ADDRESS,CLIENT_CONNECTION_PORT);
+        InetSocketAddress socketAddress = new InetSocketAddress(
+            CLIENT_ESTABLISH_CONNECTION_ADDRESS,CLIENT_ESTABLISH_CONNECTION_PORT);
         this.udpCarrier = new UDPCarrier(socketAddress);
     }
 
