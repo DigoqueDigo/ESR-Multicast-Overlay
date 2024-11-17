@@ -1,6 +1,10 @@
 package service.establishconnection;
 import packet.tcp.TCPPacket;
+import packet.tcp.TCPVideoControlPacket;
+import packet.tcp.TCPVideoControlPacket.CORE_VIDEO_PROTOCOL;
 import packet.udp.UDPPacket;
+import packet.udp.UDPVideoControlPacket;
+import packet.udp.UDPPacket.UDP_TYPE;
 import service.core.stream.StreamWorker;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.MapBoundedBuffer;
@@ -12,12 +16,12 @@ public class ClientWaitEstablishConnection implements Runnable{
 
     public static final int CLIENT_ESTABLISH_CONNECTION_PORT = 5000;
 
-//    private BoundedBuffer<TCPPacket> inBuffer;
+    private BoundedBuffer<TCPPacket> inBuffer;
     private MapBoundedBuffer<String,byte[]> videoBuffers;
 
 
     public ClientWaitEstablishConnection(BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,byte[]> videoBuffers){
- //       this.inBuffer  = inBuffer;
+        this.inBuffer  = inBuffer;
         this.videoBuffers = videoBuffers;
     }
 
@@ -34,7 +38,7 @@ public class ClientWaitEstablishConnection implements Runnable{
 
             while (udpCarrier.isClosed() == false){
 
-                if ((udpPacket = udpCarrier.receive()) != null){
+                if ((udpPacket = udpCarrier.receive()) != null && udpPacket.getType() == UDP_TYPE.CONTROL_VIDEO){
 
                     System.out.println("ClientWaitEstablishConnection received packet: " + udpPacket);
 
@@ -47,6 +51,15 @@ public class ClientWaitEstablishConnection implements Runnable{
                     new Thread(streamWorker).start();
 
                     // converter o udpPacket para um formato TCP e espetar o gajo no inbuffer
+                    UDPVideoControlPacket udpVideoControlPacket = (UDPVideoControlPacket) udpPacket;
+                    TCPVideoControlPacket tcpVideoControlPacket = new TCPVideoControlPacket(
+                        CORE_VIDEO_PROTOCOL.valueOf(udpVideoControlPacket.getProtocol().name()),
+                        udpVideoControlPacket.getVideo(),
+                        new byte[0],
+                        udpVideoControlPacket.getReceiver(),
+                        udpVideoControlPacket.getSender());
+
+                    this.inBuffer.push(tcpVideoControlPacket);
                 }
             }
         }

@@ -28,8 +28,8 @@ public class UDPCarrier{
 
     static{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
-        deserializeMap.put(UDPVideoControlPacket.class, x -> UDPVideoControlPacket.deserialize(x));
         deserializeMap.put(UDPAckPacket.class, x -> UDPAckPacket.deserialize(x));
+        deserializeMap.put(UDPVideoControlPacket.class, x -> UDPVideoControlPacket.deserialize(x));
     }
 
     private DatagramSocket socket;

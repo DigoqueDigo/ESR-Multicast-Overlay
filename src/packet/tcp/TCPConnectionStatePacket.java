@@ -17,6 +17,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
 
     public TCPConnectionStatePacket(){
         super(TCP_TYPE.CONNECTION_STATE);
+        this.protocol = null;
     }
 
 

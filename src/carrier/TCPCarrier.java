@@ -11,6 +11,7 @@ import packet.tcp.TCPBootstrapperPacket;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
+import packet.tcp.TCPVideoControlPacket;
 import packet.tcp.TCPPacket;
 import utils.IO;
 
@@ -23,8 +24,9 @@ public class TCPCarrier{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
         deserializeMap.put(TCPBootstrapperPacket.class, x -> TCPBootstrapperPacket.deserialize(x));
         deserializeMap.put(TCPFloodControlPacket.class, x -> TCPFloodControlPacket.deserialize(x));
-        deserializeMap.put(TCPGrandfatherControlPacket.class, x -> TCPGrandfatherControlPacket.deserialize(x));
+        deserializeMap.put(TCPVideoControlPacket.class, x -> TCPVideoControlPacket.deserialize(x));
         deserializeMap.put(TCPConnectionStatePacket.class, x -> TCPConnectionStatePacket.deserialize(x));
+        deserializeMap.put(TCPGrandfatherControlPacket.class, x -> TCPGrandfatherControlPacket.deserialize(x));
     }
 
     private DataInputStream dataInputStream;

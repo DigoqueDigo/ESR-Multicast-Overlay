@@ -32,7 +32,7 @@ public class StreamVlcjWorker implements Runnable{
 
 
     private void handleVideoFinished(){
-        synchronized (lock){
+        synchronized (this.lock){
             this.mediaPlayer.release();
             this.mediaPlayerFactory.release();
             this.wasReleased = true;
@@ -67,8 +67,8 @@ public class StreamVlcjWorker implements Runnable{
             this.mediaPlayer.media().play(this.fifo, this.formatRtpStream(this.clientIP, STREAMING_PORT));
 
             while (this.wasReleased == false){
-                synchronized (lock){
-                    lock.wait();
+                synchronized (this.lock){
+                    this.lock.wait();
                 }
             }
         }

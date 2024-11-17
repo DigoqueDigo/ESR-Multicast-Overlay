@@ -22,6 +22,8 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
 
     public TCPGrandfatherControlPacket(){
         super(TCP_TYPE.CONTROL_GRANDFATHER);
+        this.protocol = null;
+        this.grandparents = null;
     }
 
 

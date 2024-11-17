@@ -8,7 +8,8 @@ public abstract class TCPPacket extends Packet{
         BOOTSTRAPPER,
         CONNECTION_STATE,
         CONTROL_FLOOD,
-        CONTROL_GRANDFATHER
+        CONTROL_GRANDFATHER,
+        CONTROL_VIDEO
     }
 
     private TCP_TYPE type;

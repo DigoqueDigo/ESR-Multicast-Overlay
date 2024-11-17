@@ -18,6 +18,8 @@ public class TCPBootstrapperPacket extends TCPPacket{
 
     public TCPBootstrapperPacket(){
         super(TCP_TYPE.BOOTSTRAPPER);
+        this.node = null;
+        this.jsonObject = null;
     }
 
 

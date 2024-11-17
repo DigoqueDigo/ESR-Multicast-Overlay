@@ -8,15 +8,14 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class UDPVideoControlPacket extends UDPPacket{
 
-    public enum VIDEO_PROTOCOL{
+    public enum EDGE_VIDEO_PROTOCOL{
         REQUEST,
-        REPLY,
         CANCEL
     }
 
     // video == stream_id
     private String video;
-    private VIDEO_PROTOCOL protocol;
+    private EDGE_VIDEO_PROTOCOL protocol;
 
 
     public UDPVideoControlPacket(){
@@ -26,7 +25,7 @@ public class UDPVideoControlPacket extends UDPPacket{
     }
 
 
-    public UDPVideoControlPacket(VIDEO_PROTOCOL protocol, String video){
+    public UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL protocol, String video){
         super(UDP_TYPE.CONTROL_VIDEO);
         this.protocol = protocol;
         this.video = video;
@@ -46,7 +45,7 @@ public class UDPVideoControlPacket extends UDPPacket{
     }
 
 
-    public VIDEO_PROTOCOL getProtocol(){
+    public EDGE_VIDEO_PROTOCOL getProtocol(){
         return this.protocol;
     }
 
@@ -74,7 +73,7 @@ public class UDPVideoControlPacket extends UDPPacket{
 
         kryo.register(UDPPacket.UDP_TYPE.class);
         kryo.register(UDPVideoControlPacket.class);
-        kryo.register(UDPVideoControlPacket.VIDEO_PROTOCOL.class);
+        kryo.register(UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -92,7 +91,7 @@ public class UDPVideoControlPacket extends UDPPacket{
 
         kryo.register(UDPPacket.UDP_TYPE.class);
         kryo.register(UDPVideoControlPacket.class);
-        kryo.register(UDPVideoControlPacket.VIDEO_PROTOCOL.class);
+        kryo.register(UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL.class);
 
         UDPVideoControlPacket packet = kryo.readObject(input,UDPVideoControlPacket.class);
         input.close();
