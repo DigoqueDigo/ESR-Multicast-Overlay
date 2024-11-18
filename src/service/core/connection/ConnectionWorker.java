@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import packet.tcp.TCPPacket;
-import service.core.struct.BoundedBuffer;
+import service.struct.BoundedBuffer;
 
 
 public class ConnectionWorker implements Runnable{

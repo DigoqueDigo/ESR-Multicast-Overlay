@@ -6,8 +6,8 @@ import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPPacket.UDP_TYPE;
 import service.core.stream.StreamWorker;
-import service.core.struct.BoundedBuffer;
-import service.core.struct.MapBoundedBuffer;
+import service.struct.BoundedBuffer;
+import service.struct.MapBoundedBuffer;
 import java.net.InetSocketAddress;
 import carrier.UDPCarrier;
 

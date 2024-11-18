@@ -1,6 +1,6 @@
 package service.core.stream;
 import java.io.IOException;
-import service.core.struct.BoundedBuffer;
+import service.struct.BoundedBuffer;
 import utils.IO;
 
 

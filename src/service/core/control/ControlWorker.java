@@ -11,10 +11,10 @@ import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
+import service.struct.BoundedBuffer;
+import service.struct.MapBoundedBuffer;
+import service.struct.VideoProviders;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
-import service.core.struct.BoundedBuffer;
-import service.core.struct.MapBoundedBuffer;
-import service.core.struct.VideoProviders;
 
 
 public class ControlWorker implements Runnable{

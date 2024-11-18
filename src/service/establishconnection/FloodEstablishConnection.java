@@ -3,8 +3,8 @@ import java.io.IOException;
 import java.net.Socket;
 import packet.tcp.TCPPacket;
 import service.core.connection.ConnectionWorker;
-import service.core.struct.BoundedBuffer;
-import service.core.struct.MapBoundedBuffer;
+import service.struct.BoundedBuffer;
+import service.struct.MapBoundedBuffer;
 
 
 public class FloodEstablishConnection implements Runnable{

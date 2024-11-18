@@ -1,7 +1,7 @@
 package service.core;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TCP_TYPE;
-import service.core.struct.BoundedBuffer;
+import service.struct.BoundedBuffer;
 
 
 public class CoreWorker implements Runnable{

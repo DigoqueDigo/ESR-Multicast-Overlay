@@ -1,4 +1,4 @@
-package service.core.struct;
+package service.struct;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 

@@ -2,10 +2,10 @@ package service.core.stream;
 import java.util.Set;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
-import service.core.struct.BoundedBuffer;
-import service.core.struct.MapBoundedBuffer;
-import service.core.struct.VideoProviders;
-import service.core.struct.VideoConsumers;
+import service.struct.BoundedBuffer;
+import service.struct.MapBoundedBuffer;
+import service.struct.VideoConsumers;
+import service.struct.VideoProviders;
 
 
 public class StreamControlWorker implements Runnable{

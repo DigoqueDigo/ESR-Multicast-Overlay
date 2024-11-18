@@ -10,12 +10,12 @@ import packet.tcp.TCPPacket;
 import service.core.CoreWorker;
 import service.core.control.ControlFloodTimer;
 import service.core.control.ControlWorker;
-import service.core.struct.BoundedBuffer;
-import service.core.struct.MapBoundedBuffer;
-import service.core.struct.VideoProviders;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
+import service.struct.BoundedBuffer;
+import service.struct.MapBoundedBuffer;
+import service.struct.VideoProviders;
 
 
 public class Server {
