@@ -1,8 +1,8 @@
-package service.core.stream;
+package node.stream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import service.struct.BoundedBuffer;
+import struct.BoundedBuffer;
 
 
 public class StreamWriterWorker implements Runnable{

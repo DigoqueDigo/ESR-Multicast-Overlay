@@ -1,14 +1,14 @@
-package service.core.stream;
+package node;
 import java.util.Set;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
-import service.struct.BoundedBuffer;
-import service.struct.MapBoundedBuffer;
-import service.struct.VideoConsumers;
-import service.struct.VideoProviders;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
+import struct.VideoConsumers;
+import struct.VideoProviders;
 
 
-public class StreamControlWorker implements Runnable{
+public class NodeVideoControlWorker implements Runnable{
 
   //  private VideoProviders parents;
     private VideoConsumers videoTable;
@@ -17,7 +17,7 @@ public class StreamControlWorker implements Runnable{
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public StreamControlWorker(VideoConsumers videoTable, VideoProviders parents, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> videoStreams, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public NodeVideoControlWorker(VideoConsumers videoTable, VideoProviders parents, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> videoStreams, MapBoundedBuffer<String,TCPPacket> outBuffers){
   //      this.parents = parents;
         this.videoTable = videoTable;
         this.videoBuffer = videoBuffer;
@@ -28,13 +28,13 @@ public class StreamControlWorker implements Runnable{
 
     private void handleControlVideo(TCPVideoControlPacket videoControlPacket){
         switch (videoControlPacket.getProtocol()){
-            case REQUEST:
+            case VIDEO_REQUEST:
                 this.handleControlVideoRequest(videoControlPacket);
                 break;
-            case CANCEL:
+            case VIDEO_CANCEL:
                 this.handleControlVideoCancel(videoControlPacket);
                 break;
-            case REPLY:
+            case VIDEO_REPLY:
                 this.handleControlVideoReply(videoControlPacket);
                 break;
         }

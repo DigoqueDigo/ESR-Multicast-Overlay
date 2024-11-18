@@ -9,13 +9,13 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class TCPVideoControlPacket extends TCPPacket{
 
-    public enum CORE_VIDEO_PROTOCOL{
-        REQUEST,
-        CANCEL,
-        REPLY
+    public enum OVERLAY_VIDEO_PROTOCOL{
+        VIDEO_REQUEST,
+        VIDEO_CANCEL,
+        VIDEO_REPLY
     }
 
-    private CORE_VIDEO_PROTOCOL protocol;
+    private OVERLAY_VIDEO_PROTOCOL protocol;
     private String video;
     private byte[] data;
 
@@ -28,7 +28,7 @@ public class TCPVideoControlPacket extends TCPPacket{
     }
 
 
-    public TCPVideoControlPacket(CORE_VIDEO_PROTOCOL protocol, String video, byte[] data, String receiver, String sender){
+    public TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL protocol, String video, byte[] data, String receiver, String sender){
         super(TCP_TYPE.CONTROL_VIDEO, receiver, sender);
         this.protocol = protocol;
         this.video = video;
@@ -49,7 +49,7 @@ public class TCPVideoControlPacket extends TCPPacket{
     }
 
 
-    public CORE_VIDEO_PROTOCOL getProtocol(){
+    public OVERLAY_VIDEO_PROTOCOL getProtocol(){
         return this.protocol;
     }
 
@@ -84,8 +84,8 @@ public class TCPVideoControlPacket extends TCPPacket{
 
         kryo.register(byte[].class);
         kryo.register(TCPPacket.TCP_TYPE.class);
-        kryo.register(CORE_VIDEO_PROTOCOL.class);
         kryo.register(TCPVideoControlPacket.class);
+        kryo.register(TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL.class);
         kryo.writeObject(output,this);
 
         output.flush();
@@ -103,8 +103,8 @@ public class TCPVideoControlPacket extends TCPPacket{
 
         kryo.register(byte[].class);
         kryo.register(TCPPacket.TCP_TYPE.class);
-        kryo.register(CORE_VIDEO_PROTOCOL.class);
         kryo.register(TCPVideoControlPacket.class);
+        kryo.register(TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL.class);
 
         TCPVideoControlPacket packet = kryo.readObject(input,TCPVideoControlPacket.class);
         input.close();

@@ -1,15 +1,14 @@
 package node;
 import org.json.JSONObject;
+import node.stream.StreamWaitClient;
 import packet.tcp.TCPPacket;
 import service.core.CoreWorker;
-import service.core.control.ControlWorker;
-import service.establishconnection.ClientWaitEstablishConnection;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
-import service.struct.BoundedBuffer;
-import service.struct.MapBoundedBuffer;
-import service.struct.VideoProviders;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
+import struct.VideoProviders;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +39,7 @@ public class Node {
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
         MapBoundedBuffer<String,byte[]> videoStreams = new MapBoundedBuffer<>();
 
-        VideoProviders parents = new VideoProviders();
-    //    VideoTable videoTable = new VideoTable();
+        VideoProviders videoProviders = new VideoProviders();
 
         List<Thread> workers = new ArrayList<>();
 
@@ -49,11 +47,10 @@ public class Node {
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));
 
         workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
-        workers.add(new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers)));
-    //    workers.add(new Thread(new StreamControlWorker(videoTable,videoBuffer,videoStreams)));
+        workers.add(new Thread(new NodeFloodControlWorker(nodeName,videoProviders,controlBuffer,connectionBuffer,outBuffers)));
 
         if (isEdge){
-            workers.add(new Thread(new ClientWaitEstablishConnection(inBuffer,videoStreams)));
+            workers.add(new Thread(new StreamWaitClient(videoProviders,inBuffer,videoStreams)));
         }
 
         for (Thread worker : workers){

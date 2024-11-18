@@ -1,16 +1,16 @@
-package service.core.control;
+package server;
 import java.util.List;
 import java.util.TimerTask;
 import packet.tcp.TCPPacket;
-import service.struct.MapBoundedBuffer;
+import struct.MapBoundedBuffer;
 import packet.tcp.TCPFloodControlPacket;
 import utils.IO;
 
 
-public class ControlFloodTimer extends TimerTask{
+public class ServerFloodTimer extends TimerTask{
 
-    public static final int delay = 1000;
-    public static final int period = 10000;
+    public static final int DELAY = 1000;
+    public static final int PERIOD = 10000;
 
     private final String serverName;
     private final String signature;
@@ -18,7 +18,7 @@ public class ControlFloodTimer extends TimerTask{
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ControlFloodTimer(String serverName, String videoFolder, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public ServerFloodTimer(String serverName, String videoFolder, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.serverName = serverName;
         this.signature = serverName;
         this.videoFolder = videoFolder;

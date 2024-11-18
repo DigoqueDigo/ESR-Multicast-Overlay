@@ -1,4 +1,4 @@
-package service.struct;
+package struct;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -51,11 +51,8 @@ public class VideoProviders{
 
 
     public void removeProvider(String provider){
-
-        for (List<Pair<String,Long>> videoProviders : this.providers.values()){
-            videoProviders.removeIf(x -> x.getLeft().equals(provider));
-        }
-
+        this.providers.values().stream()
+            .forEach(providers -> providers.removeIf(x -> x.getLeft().equals(provider)));
         this.updates.remove(provider);
     }
 

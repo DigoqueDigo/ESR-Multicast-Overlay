@@ -10,6 +10,7 @@ import java.util.function.Function;
 import packet.udp.UDPAckPacket;
 import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
+import packet.udp.UDPVideoListPacket;
 import packet.udp.UDPPacket.UDP_TYPE;
 import utils.IO;
 import java.io.ByteArrayInputStream;
@@ -29,6 +30,7 @@ public class UDPCarrier{
     static{
         // Adicionar um metodo de deserialize por extensao de TCPPacket
         deserializeMap.put(UDPAckPacket.class, x -> UDPAckPacket.deserialize(x));
+        deserializeMap.put(UDPVideoListPacket.class, x -> UDPVideoListPacket.deserialize(x));
         deserializeMap.put(UDPVideoControlPacket.class, x -> UDPVideoControlPacket.deserialize(x));
     }
 

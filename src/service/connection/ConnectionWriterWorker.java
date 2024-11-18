@@ -1,8 +1,8 @@
-package service.core.connection;
+package service.connection;
 import java.io.OutputStream;
 import carrier.TCPCarrier;
 import packet.tcp.TCPPacket;
-import service.struct.BoundedBuffer;
+import struct.BoundedBuffer;
 
 
 public class ConnectionWriterWorker implements Runnable{

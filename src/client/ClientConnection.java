@@ -1,9 +1,9 @@
 package client;
 import java.net.InetSocketAddress;
 import carrier.UDPCarrier;
+import node.stream.StreamWaitClient;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL;
-import service.establishconnection.ClientWaitEstablishConnection;
 
 
 public class ClientConnection{
@@ -24,11 +24,10 @@ public class ClientConnection{
             System.out.println(edgeNode);
  
             UDPCarrier udpCarrier = new UDPCarrier();
-            InetSocketAddress socketAddress = new InetSocketAddress(
-                this.edgeNode,ClientWaitEstablishConnection.CLIENT_ESTABLISH_CONNECTION_PORT);
+            InetSocketAddress socketAddress = new InetSocketAddress(this.edgeNode,StreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT);
 
-            UDPVideoControlPacket videoRequest = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.REQUEST,this.video);
-            UDPVideoControlPacket videoCancel = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.CANCEL,this.video);
+            UDPVideoControlPacket videoRequest = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.VIDEO_REQUEST,this.video);
+            UDPVideoControlPacket videoCancel = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.VIDEO_CANCEL,this.video);
 
             System.out.println("ClientConnection send packet: " + videoRequest);
 

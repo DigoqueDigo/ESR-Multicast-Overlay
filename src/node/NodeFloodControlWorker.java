@@ -1,4 +1,4 @@
-package service.core.control;
+package node;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,13 +11,13 @@ import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
-import service.struct.BoundedBuffer;
-import service.struct.MapBoundedBuffer;
-import service.struct.VideoProviders;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
+import struct.VideoProviders;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 
 
-public class ControlWorker implements Runnable{
+public class NodeFloodControlWorker implements Runnable{
 
     private static final int HISTORY_SIZE = 100;
 
@@ -33,7 +33,7 @@ public class ControlWorker implements Runnable{
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ControlWorker(String signature, VideoProviders videoProviders, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public NodeFloodControlWorker(String signature, VideoProviders videoProviders, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.signature = signature;
         this.videoProviders = videoProviders;
         this.controlBuffer = controlBuffer;

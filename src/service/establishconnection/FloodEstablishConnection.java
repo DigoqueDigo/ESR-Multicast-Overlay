@@ -2,9 +2,9 @@ package service.establishconnection;
 import java.io.IOException;
 import java.net.Socket;
 import packet.tcp.TCPPacket;
-import service.core.connection.ConnectionWorker;
-import service.struct.BoundedBuffer;
-import service.struct.MapBoundedBuffer;
+import service.connection.ConnectionWorker;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
 
 
 public class FloodEstablishConnection implements Runnable{

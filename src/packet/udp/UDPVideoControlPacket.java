@@ -4,36 +4,37 @@ import java.io.ByteArrayOutputStream;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import packet.tcp.TCPVideoControlPacket;
+import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 
 
 public class UDPVideoControlPacket extends UDPPacket{
 
     public enum EDGE_VIDEO_PROTOCOL{
-        REQUEST,
-        CANCEL
+        VIDEO_REQUEST,
+        VIDEO_CANCEL
     }
 
-    // video == stream_id
-    private String video;
+    private String video; 
     private EDGE_VIDEO_PROTOCOL protocol;
 
 
     public UDPVideoControlPacket(){
-        super(UDP_TYPE.CONTROL_VIDEO);
+        super(UDP_TYPE.VIDEO_CONTROL);
         this.protocol = null;
-        this.video = new String();
+        this.video = null;
     }
 
 
     public UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL protocol, String video){
-        super(UDP_TYPE.CONTROL_VIDEO);
+        super(UDP_TYPE.VIDEO_CONTROL);
         this.protocol = protocol;
         this.video = video;
     }
 
 
     public UDPVideoControlPacket(UDPVideoControlPacket packet){
-        super(UDP_TYPE.CONTROL_VIDEO, packet.getReceiver(), packet.getSender());
+        super(UDP_TYPE.VIDEO_CONTROL, packet.getReceiver(), packet.getSender());
         this.protocol = packet.getProtocol();
         this.video = packet.getVideo();
     }
@@ -52,6 +53,16 @@ public class UDPVideoControlPacket extends UDPPacket{
 
     public String getVideo(){
         return this.video;
+    }
+
+
+    public TCPVideoControlPacket convert2TCP(){
+        return new TCPVideoControlPacket(
+            OVERLAY_VIDEO_PROTOCOL.valueOf(this.protocol.name()),
+            this.video,
+            new byte[0],
+            this.getReceiver(),
+            this.getSender());
     }
 
 

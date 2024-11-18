@@ -1,10 +1,10 @@
-package service.core.connection;
+package service.connection;
 import java.io.InputStream;
 import carrier.TCPCarrier;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
-import service.struct.BoundedBuffer;
+import struct.BoundedBuffer;
 
 
 public class ConnectionReaderWorker implements Runnable{

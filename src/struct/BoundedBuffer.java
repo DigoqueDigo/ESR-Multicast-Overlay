@@ -1,4 +1,4 @@
-package service.struct;
+package struct;
 import java.util.NoSuchElementException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;

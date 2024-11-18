@@ -1,6 +1,6 @@
-package service.core.stream;
+package node.stream;
 import java.io.IOException;
-import service.struct.BoundedBuffer;
+import struct.BoundedBuffer;
 import utils.IO;
 
 
@@ -26,10 +26,15 @@ public class StreamWorker implements Runnable{
                 throw new IOException("StreamWorker can not create fifo: " + fifoName);
             } else System.out.println("StreamWorker create fifo: " + fifoName);
 
-            Thread reader = new Thread(new StreamWriterWorker(this.videoBuffer,fifoName));
-            Thread writer = new Thread(new StreamVlcjWorker(this.clientIP,fifoName));
+            Thread writer = new Thread(new StreamWriterWorker(this.videoBuffer,fifoName));
+            Thread reader = new Thread(new StreamVlcjWorker(this.clientIP,fifoName));
 
             reader.start();
+
+            // o vlc tem de ser o primeiro a abrir o fifo
+            // isto nao assegura nada mas da algumas garantias
+            Thread.sleep(1000);
+
             writer.start();
 
             reader.join();

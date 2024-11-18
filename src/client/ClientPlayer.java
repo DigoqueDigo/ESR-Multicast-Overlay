@@ -5,7 +5,7 @@ import java.awt.event.WindowAdapter;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
-import service.core.stream.StreamVlcjWorker;
+import node.stream.StreamVlcjWorker;
 
 
 public class ClientPlayer implements Runnable{
