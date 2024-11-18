@@ -38,4 +38,9 @@ public class MapBoundedBuffer <K,V>{
         try {this.boundedBuffers.get(key).push(value);}
         catch (Exception e) {e.printStackTrace();}
     }
+
+
+    public boolean containsKey(K key){
+        return this.boundedBuffers.containsKey(key);
+    }
 }

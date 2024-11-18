@@ -8,11 +8,13 @@ public class CoreWorker implements Runnable{
 
     private BoundedBuffer<TCPPacket> inBuffer;
     private BoundedBuffer<TCPPacket> controlBuffer;
+    private BoundedBuffer<TCPPacket> videoBuffer;
 
 
-    public CoreWorker(BoundedBuffer<TCPPacket> inBuffer, BoundedBuffer<TCPPacket> controlBuffer){
+    public CoreWorker(BoundedBuffer<TCPPacket> inBuffer, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<TCPPacket> videoBuffer){
         this.inBuffer = inBuffer;
         this.controlBuffer = controlBuffer;
+        this.videoBuffer = videoBuffer;
     }
 
 
@@ -40,6 +42,9 @@ public class CoreWorker implements Runnable{
                     case CONNECTION_STATE:
                         this.controlBuffer.push(tcpPacket);
                         break;
+
+                    case CONTROL_VIDEO:
+                        this.videoBuffer.push(tcpPacket);
 
                     default:
                         System.out.println("CoreWorker unknown packet:\n" + tcpPacket);

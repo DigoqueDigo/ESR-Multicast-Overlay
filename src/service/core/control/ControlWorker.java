@@ -1,5 +1,8 @@
 package service.core.control;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
@@ -11,53 +14,58 @@ import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.MapBoundedBuffer;
-import service.core.struct.Parents;
+import service.core.struct.VideoProviders;
 
 
 public class ControlWorker implements Runnable{
 
     private static final int HISTORY_SIZE = 100;
 
-    private String signature;
-    private Parents parents;
+    private final String signature;
+    private VideoProviders videoProviders;
 
     private Queue<String> history;
-    private Set<String> blackList;
-    private Set<String> grandParents;
+    private Map<String,Set<String>> blackList;
+    private Map<String,Set<String>> grandParentsVideoProviders;
 
     private BoundedBuffer<String> connectionBuffer;
     private BoundedBuffer<TCPPacket> controlBuffer;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ControlWorker(String signature, Parents parents, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public ControlWorker(String signature, VideoProviders videoProviders, BoundedBuffer<TCPPacket> controlBuffer, BoundedBuffer<String> connectionBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.signature = signature;
-        this.parents = parents;
-        this.outBuffers = outBuffers;
+        this.videoProviders = videoProviders;
         this.controlBuffer = controlBuffer;
         this.connectionBuffer = connectionBuffer;
-        this.grandParents = new HashSet<>();
-        this.blackList = new HashSet<>();
+        this.outBuffers = outBuffers;
+        this.blackList = new HashMap<>();
+        this.grandParentsVideoProviders = new HashMap<>();
         this.history = new CircularFifoQueue<>(HISTORY_SIZE);
     }
 
 
     private void handleFloodPacket(TCPFloodControlPacket tcpFloodPacket){
 
-        // so inspeciono o pacote se nao tiver a minha assinatura
+        // inspeciono o pacote se nao tiver a minha assinatura
         if (tcpFloodPacket.getSignatures().contains(signature) == false){
 
             String sender = tcpFloodPacket.getSender();
+            List<String> videos = tcpFloodPacket.getVideos();
+
             Long serverTimeStamp = tcpFloodPacket.getTimestamp();
             long delay = System.nanoTime() - serverTimeStamp;
 
-            // so adiciono o nodo como pai se for o primeiro pacote que recebo dele
-            // so dou flood do pacote se for o primerio que recebo naquela interface
+            // adiciono o nodo como provider se for o primeiro pacote que recebo dele
             String identifier = sender + serverTimeStamp.toString();
 
             if (this.history.contains(identifier) == false){
                 this.history.add(identifier);
-                this.parents.addParent(tcpFloodPacket.getSender(),delay);
+                videos.stream().forEach(video -> {
+                    this.videoProviders.addProvider(video,sender,delay);    
+                    this.blackList.putIfAbsent(video,new HashSet<>());
+                    this.grandParentsVideoProviders.putIfAbsent(video,new HashSet<>());
+                });
             }
 
             // adicionar a minha assinatura ao pacote de control flood
@@ -72,8 +80,8 @@ public class ControlWorker implements Runnable{
             }
         }
 
-        System.out.println(this.parents);
-        System.out.println("GRANDPARENTS: " + this.grandParents);
+        System.out.println(this.videoProviders);
+        System.out.println("GRANDPARENTS: " + this.grandParentsVideoProviders);
         System.out.println("BLACKLIST: " + this.blackList);
     }
 
@@ -98,13 +106,16 @@ public class ControlWorker implements Runnable{
     private void handleGrandFatherRequest(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
         String sender = tcpGrandfatherPacket.getSender();
-        Set<String> parents = this.parents.getParents();
+        String video = tcpGrandfatherPacket.getVideo();
+        Set<String> providers = this.videoProviders.getProviders(video);
 
-        // remover o sender, pode ser um dos meus pais
-        parents.remove(sender);
+        // remover o sender, pode ser um dos meus providers
+        providers.remove(sender);
 
-        // criar um pacote com os meus pais e enviar ao filho
-        TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,parents);
+        // criar um pacote com os meus providers e enviar ao filho
+        TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(
+            GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,video,providers);
+
         this.outBuffers.put(sender,reply);
 
         System.out.println("ControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
@@ -113,8 +124,13 @@ public class ControlWorker implements Runnable{
 
 
     private void handleGrandFatherReply(TCPGrandfatherControlPacket tcpGrandfatherPacket){
+
         String sender = tcpGrandfatherPacket.getSender();
-        this.grandParents = tcpGrandfatherPacket.getGrandparents();
+        String video = tcpGrandfatherPacket.getVideo();
+        Set<String> providers = tcpGrandfatherPacket.getGrandparents();
+
+        // atualizar os avos do video
+        this.grandParentsVideoProviders.put(video,providers);
         System.out.println("ControlWorker (grandfather reply) receive grandFather reply: " + this.signature + " <- " + sender);
     }
 
@@ -126,58 +142,68 @@ public class ControlWorker implements Runnable{
         this.outBuffers.put(neighbour,tcpStatePacket);
 
         // remover o neighbour dos pais e eliminar o buffer
-        this.parents.removeParent(neighbour);
+        this.videoProviders.removeProvider(neighbour);
         this.outBuffers.removeBoundedBuffer(neighbour);
+
         System.out.println("ControlWorker (connection lost) remove neighbour: " + neighbour);
 
-        // se perdi a conexao com todos os pais, informar os filhos e contactar os avos
-        if (this.parents.size() == 0){
+        // para cada video tenho de verificar se fiquei sem providers
+        for (String video : this.videoProviders.getVideos()){
 
-            // os meus avos agora sao os meus pais
-            // informar os meus filhos que o avo deles morreu
-            TCPGrandfatherControlPacket info = new TCPGrandfatherControlPacket(
-                GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, this.grandParents);
+            if (this.videoProviders.getProviders(video).size() == 0){
 
-            for (String son : this.outBuffers.getKeys()){
-                this.outBuffers.put(son,info);
-                System.out.println("ControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son);
-            }
+                // informar os meus filhos que o avo deles morreu
+                TCPGrandfatherControlPacket info = new TCPGrandfatherControlPacket(
+                    GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, video, this.grandParentsVideoProviders.get(video));
 
-            // entrar em contacto com os meus avos
-            for (String grandParent : this.grandParents){
-                try {this.connectionBuffer.push(grandParent);}
-                catch (Exception e) {e.printStackTrace();}
+                for (String son : this.outBuffers.getKeys()){
+                    this.outBuffers.put(son,info);
+                    System.out.println("ControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son);
+                }
+
+                // entrar em contacto com os meus avos
+                for (String grandParent : this.grandParentsVideoProviders.get(video)){
+                    try {this.connectionBuffer.push(grandParent);}
+                    catch (Exception e) {e.printStackTrace();}
+                }
+
+                // esquecer os avos deste video
+                this.grandParentsVideoProviders.get(video).clear();
+                this.blackList.get(video).clear();
             }
         }
-
-        // o algoritmo funciona melhor se esquecer os pais sempre que alguem morrer
-        this.grandParents.clear();
-        this.blackList.clear();
     }
 
 
     private void requestGrandParends(){
 
-        TCPGrandfatherControlPacket requestGrandParents =
-            new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST);
-
         // nunca faco um pedido nas primeiras iteracoes de flood
         if (this.history.size() > 1){
 
-            // envio o pedido de tiver um pai e ainda nao conhecer os avos
-            if (this.parents.size() == 1 && this.grandParents.size() == 0){    
+            // tenho de verificar os providers de cada video
+            for (String video : this.videoProviders.getVideos()){
 
-                // enviar o pedido para todos pais (sera sempre um)
-                for (String parent : this.parents.getParents()){
+                // envio o pedido de tiver um pai e ainda nao conhecer os avos
+                if (this.videoProviders.getProviders(video).size() == 1 && this.grandParentsVideoProviders.get(video).size() == 0){    
 
-                    // o pai nao pode estar na lista negra
-                    if (this.blackList.contains(parent) == false){
+                    // enviar o pedido para o provider que me resta
+                    for (String provider : this.videoProviders.getProviders(video)){
 
-                        this.blackList.add(parent);
-                        System.out.println("ControlWorker (trigger) add blacklist: " + parent);
+                        // o provider nao pode estar na lista negra
+                        if (this.blackList.get(video).contains(provider) == false){
 
-                        this.outBuffers.put(parent,requestGrandParents);
-                        System.out.println("ControlWorker (trigger) send grandfather request: " + this.signature + " -> " + parent);
+                            TCPGrandfatherControlPacket requestGrandParents =
+                                new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST,video);
+
+                            this.blackList.putIfAbsent(video,new HashSet<>());
+                            this.blackList.get(video).add(provider);
+                            System.out.println("ControlWorker (trigger) add blacklist: " + video + " :: " + provider);
+
+                            this.outBuffers.put(provider,requestGrandParents);
+                            System.out.println("ControlWorker (trigger) send grandfather request: " + this.signature + " -> " + provider);
+
+                            System.out.println(requestGrandParents);
+                        }
                     }
                 }
             }
@@ -194,7 +220,7 @@ public class ControlWorker implements Runnable{
             while ((tcpPacket = this.controlBuffer.pop()) != null){
 
                 // sempre que recebo um pacote verifico se nenhum dos pais é zombie
-                this.parents.getZombies().forEach(x -> this.parents.removeParent(x));
+                this.videoProviders.deleteZombies();
 
                 switch (tcpPacket.getType()){
 

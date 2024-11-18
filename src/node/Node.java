@@ -5,7 +5,7 @@ import service.core.CoreWorker;
 import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.MapBoundedBuffer;
-import service.core.struct.Parents;
+import service.core.struct.VideoProviders;
 import service.establishconnection.ClientWaitEstablishConnection;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
@@ -34,23 +34,26 @@ public class Node {
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
+        BoundedBuffer<TCPPacket> videoBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
-        MapBoundedBuffer<String,byte[]> videoBuffers = new MapBoundedBuffer<>();
+        MapBoundedBuffer<String,byte[]> videoStreams = new MapBoundedBuffer<>();
 
-        Parents parents = new Parents();
+        VideoProviders parents = new VideoProviders();
+    //    VideoTable videoTable = new VideoTable();
 
         List<Thread> workers = new ArrayList<>();
 
         workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));
 
-        workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer)));
+        workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers)));
+    //    workers.add(new Thread(new StreamControlWorker(videoTable,videoBuffer,videoStreams)));
 
         if (isEdge){
-            workers.add(new Thread(new ClientWaitEstablishConnection(inBuffer,videoBuffers)));
+            workers.add(new Thread(new ClientWaitEstablishConnection(inBuffer,videoStreams)));
         }
 
         for (Thread worker : workers){

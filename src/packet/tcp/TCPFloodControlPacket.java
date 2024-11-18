@@ -14,6 +14,7 @@ public class TCPFloodControlPacket extends TCPPacket{
     private String serverName;
     private long timestamp;
     private List<String> signatures;
+    private List<String> videos;
 
 
     public TCPFloodControlPacket(){
@@ -21,19 +22,12 @@ public class TCPFloodControlPacket extends TCPPacket{
     }
 
 
-    public TCPFloodControlPacket(String serverName) {
+    public TCPFloodControlPacket(String serverName, List<String> videos) {
         super(TCP_TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
         this.timestamp = System.nanoTime();
         this.signatures = new ArrayList<>();
-    }
-
-
-    public TCPFloodControlPacket(String serverName, long timestamp) {
-        super(TCP_TYPE.CONTROL_FLOOD);
-        this.serverName = serverName;
-        this.timestamp = timestamp;
-        this.signatures = new ArrayList<>();
+        this.videos = videos;
     }
 
 
@@ -42,6 +36,7 @@ public class TCPFloodControlPacket extends TCPPacket{
         this.serverName = packet.getServerName();
         this.timestamp = packet.getTimestamp();
         this.signatures = packet.getSignatures();
+        this.videos = packet.getVideos();
     }
 
 
@@ -65,10 +60,15 @@ public class TCPFloodControlPacket extends TCPPacket{
     }
 
 
+    public List<String> getVideos() {
+        return this.videos.stream().collect(Collectors.toList());
+    }
+
+
     public void addSignature(String signature) {
         this.signatures.add(signature);
     }
-    
+
 
     @Override
     public String toString() {
@@ -77,6 +77,7 @@ public class TCPFloodControlPacket extends TCPPacket{
         buffer.append("\tServerName: ").append(this.serverName);
         buffer.append("\tTimestamp: ").append(this.timestamp);
         buffer.append("\tSignatures: ").append(this.signatures);
+        buffer.append("\tVideos: ").append(this.videos);
         return buffer.toString();
     }
 

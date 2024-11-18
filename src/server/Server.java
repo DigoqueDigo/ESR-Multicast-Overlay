@@ -12,7 +12,7 @@ import service.core.control.ControlFloodTimer;
 import service.core.control.ControlWorker;
 import service.core.struct.BoundedBuffer;
 import service.core.struct.MapBoundedBuffer;
-import service.core.struct.Parents;
+import service.core.struct.VideoProviders;
 import service.establishconnection.FloodEstablishConnection;
 import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
@@ -23,7 +23,8 @@ public class Server {
     public static void main(String[] args) throws InterruptedException, IOException{
 
         String nodeName = args[0];
-        String bootstrapperIP = args[1];
+        String videoFolder = args[1];
+        String bootstrapperIP = args[2];
 
         BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
@@ -33,22 +34,25 @@ public class Server {
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
+        BoundedBuffer<TCPPacket> videoBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
 
-        Parents parents = new Parents();
+        VideoProviders parents = new VideoProviders();
+    //    VideoTable videoTable = new VideoTable();
 
         Timer timer = new Timer();
-        TimerTask controlFlood = new ControlFloodTimer(nodeName,outBuffers);
+        TimerTask controlFlood = new ControlFloodTimer(nodeName,videoFolder,outBuffers);
 
         List<Thread> workers = new ArrayList<>();
 
         workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));
 
-        workers.add( new Thread(new CoreWorker(inBuffer,controlBuffer)));
+        workers.add( new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new ControlWorker(nodeName,parents,controlBuffer,connectionBuffer,outBuffers)));
+    //    workers.add(new Thread(new StreamControlWorker(videoTable,videoBuffer, null)));
 
         timer.schedule(controlFlood,ControlFloodTimer.delay,ControlFloodTimer.period);
 

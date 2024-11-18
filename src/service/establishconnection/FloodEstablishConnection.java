@@ -32,18 +32,22 @@ public class FloodEstablishConnection implements Runnable{
 
                 try{
 
-                    Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
-                    String myInterface = socket.getLocalAddress().getHostAddress();
-                    this.outBuffers.addBoundedBuffer(neighbour);
+                    if (this.outBuffers.containsKey(neighbour) == false){
 
-                    BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
-                    ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
+                        Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
+                        String myInterface = socket.getLocalAddress().getHostAddress();
+                        this.outBuffers.addBoundedBuffer(neighbour);
 
-                    new Thread(connectionWorker).start();
-                    System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
+                        BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
+                        ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
+
+                        new Thread(connectionWorker).start();
+                        System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
+                    }
                 }
 
                 catch (IOException e){
+                    this.outBuffers.removeBoundedBuffer(neighbour);
                     System.out.println("FloodEstablishConnection service can not contact: " + neighbour);
                 }
             }

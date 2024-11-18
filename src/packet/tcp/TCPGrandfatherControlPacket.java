@@ -18,25 +18,29 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
 
     private GRANDFATHER_PROTOCOL protocol;
     private Set<String> grandparents;
+    private String video;
 
 
     public TCPGrandfatherControlPacket(){
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = null;
+        this.video = null;
         this.grandparents = null;
     }
 
 
-    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol) {
+    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, String video) {
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
+        this.video = video;
         this.grandparents = new HashSet<>();
     }
 
 
-    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, Set<String> grandparents) {
+    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, String video, Set<String> grandparents) {
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
+        this.video = video;
         this.grandparents = new HashSet<>(grandparents);
     }
 
@@ -44,6 +48,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     public TCPGrandfatherControlPacket(TCPGrandfatherControlPacket packet) {
         super(packet.getType(), packet.getReceiver(), packet.getSender());
         this.protocol = packet.getProtocol();
+        this.video = packet.getVideo();
         this.grandparents = packet.getGrandparents();
     }
 
@@ -58,6 +63,11 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     }
 
 
+    public String getVideo(){
+        return this.video;
+    }
+
+
     public Set<String> getGrandparents(){
         return this.grandparents.stream().collect(Collectors.toSet());
     }
@@ -68,6 +78,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
         buffer.append("\tProtocol: ").append(this.protocol.name());
+        buffer.append("\tVideo: ").append(this.video);
         buffer.append("\tGrandfather: ").append(this.grandparents);
         return buffer.toString();
     }
