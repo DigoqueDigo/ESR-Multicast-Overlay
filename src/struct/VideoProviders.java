@@ -15,8 +15,8 @@ public class VideoProviders{
     private static final double NEW_TIMESTAMP_WEIGHT = 0.25;
     private static final double CURRENT_RATING_WEIGHT = 0.75;
 
-    // o fornecedor é dado como morto se não for atualizado em 20 segundos
-    private static final Long ZOMBIE =  20_000_000_000L;
+    // o fornecedor é dado como morto se não for atualizado em 18 segundos
+    private static final Long ZOMBIE =  18_000_000_000L;
 
     /* providers
      * videoA -> [(O1,165),(O5,162)]

@@ -75,7 +75,7 @@ public class NodeFloodControlWorker implements Runnable{
             for (String neighbour : this.outBuffers.getKeys()){
                 if (neighbour.equals(sender) == false){
                     this.outBuffers.put(neighbour,tcpFloodPacket);
-                    System.out.println("ControlWorker send flood: " + this.signature + " -> " + neighbour);
+                    System.out.println("NodeFloodControlWorker send flood: " + this.signature + " -> " + neighbour);
                 }
             }
         }
@@ -118,8 +118,8 @@ public class NodeFloodControlWorker implements Runnable{
 
         this.outBuffers.put(sender,reply);
 
-        System.out.println("ControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
-        System.out.println("ControlWorker (grandfather request) send grandfather reply: " + this.signature + " -> " + sender);
+        System.out.println("NodeFloodControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
+        System.out.println("NodeFloodControlWorker (grandfather request) send grandfather reply: " + this.signature + " -> " + sender);
     }
 
 
@@ -131,7 +131,7 @@ public class NodeFloodControlWorker implements Runnable{
 
         // atualizar os avos do video
         this.grandParentsVideoProviders.put(video,providers);
-        System.out.println("ControlWorker (grandfather reply) receive grandFather reply: " + this.signature + " <- " + sender);
+        System.out.println("NodeFloodControlWorker (grandfather reply) receive grandFather reply: " + this.signature + " <- " + sender);
     }
 
 
@@ -145,7 +145,7 @@ public class NodeFloodControlWorker implements Runnable{
         this.videoProviders.removeProvider(neighbour);
         this.outBuffers.removeBoundedBuffer(neighbour);
 
-        System.out.println("ControlWorker (connection lost) remove neighbour: " + neighbour);
+        System.out.println("NodeFloodControlWorker (connection lost) remove neighbour: " + neighbour);
 
         // para cada video tenho de verificar se fiquei sem providers
         for (String video : this.videoProviders.getVideos()){
@@ -158,7 +158,7 @@ public class NodeFloodControlWorker implements Runnable{
 
                 for (String son : this.outBuffers.getKeys()){
                     this.outBuffers.put(son,info);
-                    System.out.println("ControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son);
+                    System.out.println("NodeFloodControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son + " (" + video + ")");
                 }
 
                 // entrar em contacto com os meus avos
@@ -192,17 +192,15 @@ public class NodeFloodControlWorker implements Runnable{
                         // o provider nao pode estar na lista negra
                         if (this.blackList.get(video).contains(provider) == false){
 
-                            TCPGrandfatherControlPacket requestGrandParents =
+                            TCPGrandfatherControlPacket requestGrandParent =
                                 new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST,video);
 
-                            this.blackList.putIfAbsent(video,new HashSet<>());
                             this.blackList.get(video).add(provider);
-                            System.out.println("ControlWorker (trigger) add blacklist: " + video + " :: " + provider);
+                            System.out.println("NodeFloodControlWorker (trigger) add blacklist: " + video + " :: " + provider);
 
-                            this.outBuffers.put(provider,requestGrandParents);
-                            System.out.println("ControlWorker (trigger) send grandfather request: " + this.signature + " -> " + provider);
-
-                            System.out.println(requestGrandParents);
+                            this.outBuffers.put(provider,requestGrandParent);
+                            System.out.println("NodeFloodControlWorker (trigger) send grandfather request: " + this.signature + " -> " + provider);
+                            System.out.println(requestGrandParent);
                         }
                     }
                 }
@@ -237,7 +235,7 @@ public class NodeFloodControlWorker implements Runnable{
                         break;
 
                     default:
-                        System.out.println("ControlWorker unknown tcpPacket:\n" + tcpPacket);
+                        System.out.println("NodeFloodControlWorker unknown tcpPacket:\n" + tcpPacket);
                         break;
                 }
 

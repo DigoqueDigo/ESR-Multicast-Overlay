@@ -43,7 +43,7 @@ public class Server {
         workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));
 
-        workers.add( new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
+        workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new ServerFloodControlWorker(controlBuffer,outBuffers)));
 
         timer.schedule(controlFlood,ServerFloodTimer.DELAY,ServerFloodTimer.PERIOD);

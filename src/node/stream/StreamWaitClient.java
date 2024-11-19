@@ -79,13 +79,13 @@ public class StreamWaitClient implements Runnable{
             InetSocketAddress socketAddress = new InetSocketAddress(CLIENT_ESTABLISH_CONNECTION_PORT);
             UDPCarrier udpCarrier = new UDPCarrier(socketAddress);
 
-            System.out.println("ClientWaitEstablishConnection service started");
+            System.out.println("StreamWaitClient service started");
 
             while (udpCarrier.isClosed() == false){
 
                 if ((udpPacket = udpCarrier.receive()) != null){
 
-                    System.out.println("ClientWaitEstablishConnection received packet: " + udpPacket);
+                    System.out.println("StreamWaitClient received packet: " + udpPacket);
 
                     switch (udpPacket.getType()) {
 
