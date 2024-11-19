@@ -78,7 +78,7 @@ public class ClientUI{
                 while (videoList == null){
 
                     selectedEdgeNode = this.select_option(edge_prompt,warning,this.edgeNodes);
-                    ClientVideoGrather clientVideoGrather = new ClientVideoGrather(
+                    ClientVideoGather clientVideoGrather = new ClientVideoGather(
                         selectedEdgeNode,StreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT);
 
                     videoList = clientVideoGrather.getVideoList();
