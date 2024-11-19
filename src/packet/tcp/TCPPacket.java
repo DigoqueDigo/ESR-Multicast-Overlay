@@ -6,7 +6,7 @@ public abstract class TCPPacket extends Packet{
 
     public enum TCP_TYPE {
         BOOTSTRAPPER,
-        CONNECTION_STATE,
+        CONTROL_CONNECTION_STATE,
         CONTROL_FLOOD,
         CONTROL_GRANDFATHER,
         CONTROL_VIDEO

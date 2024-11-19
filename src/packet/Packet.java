@@ -4,16 +4,14 @@ package packet;
 public abstract class Packet{
 
     private String senderIP;
-    private Integer senderPort;
     private String receiverIP;
-    private Integer receiverPort;
+    private int senderPort;
+    private int receiverPort;
 
 
     public Packet(){
-        this.senderIP = null;
-        this.senderPort = null;
-        this.receiverIP = null;
-        this.receiverPort = null;
+        this.senderPort = -1;
+        this.receiverPort = -1;
     }
 
 

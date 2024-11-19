@@ -12,11 +12,13 @@ import struct.VideoProviders;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import carrier.UDPCarrier;
 
 
-public class StreamWaitClient implements Runnable{
+public class NodeStreamWaitClient implements Runnable{
 
     public static final int CLIENT_ESTABLISH_CONNECTION_PORT = 5000;
 
@@ -25,7 +27,7 @@ public class StreamWaitClient implements Runnable{
     private MapBoundedBuffer<String,byte[]> streamBuffers;
 
 
-    public StreamWaitClient(VideoProviders videoProviders, BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,byte[]> streamBuffers){
+    public NodeStreamWaitClient(VideoProviders videoProviders, BoundedBuffer<TCPPacket> inBuffer, MapBoundedBuffer<String,byte[]> streamBuffers){
         this.videoProviders = videoProviders;
         this.inBuffer = inBuffer;
         this.streamBuffers = streamBuffers;
@@ -44,7 +46,9 @@ public class StreamWaitClient implements Runnable{
             udpVideoControlPacket.getVideo());
 
         tcpVideoControlPacket.setReceiverIP(udpVideoControlPacket.getReceiverIP());
+        tcpVideoControlPacket.setReceiverPort(udpVideoControlPacket.getReceiverPort());
         tcpVideoControlPacket.setSenderIP(udpVideoControlPacket.getSenderIP());
+        tcpVideoControlPacket.setSenderPort(udpVideoControlPacket.getSenderPort());
 
         this.inBuffer.push(tcpVideoControlPacket);
     }
@@ -56,7 +60,7 @@ public class StreamWaitClient implements Runnable{
         this.streamBuffers.addBoundedBuffer(client);
 
         BoundedBuffer<byte[]> streamBuffer = this.streamBuffers.getBoundedBuffer(client);
-        StreamWorker streamWorker = new StreamWorker(client,streamBuffer);
+        NodeStreamWorker streamWorker = new NodeStreamWorker(client,streamBuffer);
 
         new Thread(streamWorker).start();
     }
@@ -67,11 +71,13 @@ public class StreamWaitClient implements Runnable{
         String clientIP = videoListPacket.getSenderIP();
         int clientPort = videoListPacket.getSenderPort();
 
-        Set<String> videos = this.videoProviders.getVideos();
+        List<String> videos = this.videoProviders.getVideos().stream().collect(Collectors.toList());
         UDPVideoListPacket response = new UDPVideoListPacket(videos);
 
         UDPCarrier udpCarrier = new UDPCarrier();
         InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
+
+        System.out.println("StreamWaitClient send: " + response);
 
         udpCarrier.connect(socketAddress);
         udpCarrier.send(response);
@@ -94,7 +100,7 @@ public class StreamWaitClient implements Runnable{
 
                 if ((udpPacket = udpCarrier.receive()) != null){
 
-                    System.out.println("StreamWaitClient received packet: " + udpPacket);
+                    System.out.println("StreamWaitClient receive: " + udpPacket);
 
                     switch (udpPacket.getType()) {
 

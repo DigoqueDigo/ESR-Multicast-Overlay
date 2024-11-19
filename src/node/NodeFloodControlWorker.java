@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
@@ -114,7 +115,7 @@ public class NodeFloodControlWorker implements Runnable{
 
         // criar um pacote com os meus providers e enviar ao filho
         TCPGrandfatherControlPacket reply = new TCPGrandfatherControlPacket(
-            GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,video,providers);
+            GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY,video,providers.stream().collect(Collectors.toList()));
 
         this.outBuffers.put(sender,reply);
 
@@ -127,7 +128,7 @@ public class NodeFloodControlWorker implements Runnable{
 
         String sender = tcpGrandfatherPacket.getSenderIP();
         String video = tcpGrandfatherPacket.getVideo();
-        Set<String> providers = tcpGrandfatherPacket.getGrandparents();
+        Set<String> providers = tcpGrandfatherPacket.getGrandparents().stream().collect(Collectors.toSet());
 
         // atualizar os avos do video
         this.grandParentsVideoProviders.put(video,providers);
@@ -153,8 +154,10 @@ public class NodeFloodControlWorker implements Runnable{
             if (this.videoProviders.getProviders(video).size() == 0){
 
                 // informar os meus filhos que o avo deles morreu
+                Set<String> grandProviders = this.grandParentsVideoProviders.get(video);
+
                 TCPGrandfatherControlPacket info = new TCPGrandfatherControlPacket(
-                    GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, video, this.grandParentsVideoProviders.get(video));
+                    GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, video, grandProviders.stream().collect(Collectors.toList()));
 
                 for (String son : this.outBuffers.getKeys()){
                     this.outBuffers.put(son,info);
@@ -230,12 +233,12 @@ public class NodeFloodControlWorker implements Runnable{
                         this.handleGrandFatherPacket((TCPGrandfatherControlPacket) tcpPacket);
                         break;
 
-                    case CONNECTION_STATE:
+                    case CONTROL_CONNECTION_STATE:
                         this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
                         break;
 
                     default:
-                        System.out.println("NodeFloodControlWorker unknown tcpPacket:\n" + tcpPacket);
+                        System.out.println("NodeFloodControlWorker unknown packet: " + tcpPacket);
                         break;
                 }
 

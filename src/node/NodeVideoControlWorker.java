@@ -106,7 +106,7 @@ public class NodeVideoControlWorker implements Runnable{
                         break;
 
                     default:
-                        System.out.println("StreamControl unknown tcpPacket:\n" + tcpPacket);
+                        System.out.println("StreamControl unknown packet: " + tcpPacket);
                         break;
                 }
             }

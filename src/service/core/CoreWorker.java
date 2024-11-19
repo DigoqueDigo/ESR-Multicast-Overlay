@@ -27,7 +27,7 @@ public class CoreWorker implements Runnable{
             while ((tcpPacket =this.inBuffer.pop()) != null){
 
                 TCP_TYPE type = tcpPacket.getType();
-                System.out.println("CoreWorker received packet:\n" + tcpPacket);
+                System.out.println("CoreWorker received packet: " + tcpPacket);
 
                 switch (type){
 
@@ -39,7 +39,7 @@ public class CoreWorker implements Runnable{
                         this.controlBuffer.push(tcpPacket);
                         break;
 
-                    case CONNECTION_STATE:
+                    case CONTROL_CONNECTION_STATE:
                         this.controlBuffer.push(tcpPacket);
                         break;
 
@@ -47,7 +47,7 @@ public class CoreWorker implements Runnable{
                         this.videoBuffer.push(tcpPacket);
 
                     default:
-                        System.out.println("CoreWorker unknown packet:\n" + tcpPacket);
+                        System.out.println("CoreWorker unknown packet: " + tcpPacket);
                         break;
                 }
             }

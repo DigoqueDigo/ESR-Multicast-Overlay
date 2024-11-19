@@ -1,7 +1,8 @@
 package packet.udp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -10,18 +11,17 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class UDPVideoListPacket extends UDPPacket{
 
-    private Set<String> videos; 
+    private List<String> videos; 
 
 
     public UDPVideoListPacket(){
         super(UDP_TYPE.VIDEO_LIST);
-        this.videos = null;
     }
 
 
-    public UDPVideoListPacket(Set<String> videos){
-        super(UDP_TYPE.VIDEO_CONTROL);
-        this.videos = videos;
+    public UDPVideoListPacket(List<String> videos){
+        super(UDP_TYPE.VIDEO_LIST);
+        this.videos = videos.stream().collect(Collectors.toList());
     }
 
 
@@ -41,15 +41,15 @@ public class UDPVideoListPacket extends UDPPacket{
     }
 
 
-    public Set<String> getVideos(){
-        return this.videos.stream().collect(Collectors.toSet());
+    public List<String> getVideos(){
+        return this.videos.stream().collect(Collectors.toList());
     }
 
 
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tVideo: " + this.videos);
+        buffer.append("\tVideos: " + this.videos);
         return buffer.toString();
     }
 
@@ -61,7 +61,7 @@ public class UDPVideoListPacket extends UDPPacket{
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(Set.class);
+        kryo.register(ArrayList.class);
         kryo.register(UDPPacket.UDP_TYPE.class);
         kryo.register(UDPVideoListPacket.class);
         kryo.writeObject(output,this);
@@ -79,7 +79,7 @@ public class UDPVideoListPacket extends UDPPacket{
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(Set.class);
+        kryo.register(ArrayList.class);
         kryo.register(UDPPacket.UDP_TYPE.class);
         kryo.register(UDPVideoListPacket.class);
 

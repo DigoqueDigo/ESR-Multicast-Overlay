@@ -5,13 +5,13 @@ import java.io.OutputStream;
 import struct.BoundedBuffer;
 
 
-public class StreamWriterWorker implements Runnable{
+public class NodeStreamWriterWorker implements Runnable{
 
     private OutputStream fifo;
     private BoundedBuffer<byte[]> videoBuffer;
 
 
-    public StreamWriterWorker(BoundedBuffer<byte[]> videobuffer, String fifo) throws IOException{
+    public NodeStreamWriterWorker(BoundedBuffer<byte[]> videobuffer, String fifo) throws IOException{
         this.videoBuffer = videobuffer;
         this.fifo = new FileOutputStream(fifo);
     }

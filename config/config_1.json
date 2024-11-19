@@ -9,24 +9,12 @@
     "client1": {
         "neighbours": [
             "10.0.0.1"
-        ],
-        "videos": [
-            "videoA.mp4",
-            "videoB.mkv",
-            "videoB.mp4",
-            "videoC.webm"
         ]
     },
 
     "client2": {
         "neighbours": [
             "10.0.1.1"
-        ],
-        "videos": [
-            "videoA.mp4",
-            "videoB.mkv",
-            "videoB.mp4",
-            "videoC.webm"
         ]
     },
 

@@ -5,7 +5,7 @@ import java.awt.event.WindowAdapter;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.component.EmbeddedMediaPlayerComponent;
-import node.stream.StreamVlcjWorker;
+import node.stream.NodeStreamVlcjWorker;
 
 
 public class ClientPlayer implements Runnable{
@@ -72,7 +72,7 @@ public class ClientPlayer implements Runnable{
             });
 
             this.frame.setVisible(true);
-            this.mediaPlayerComponent.mediaPlayer().media().play("rtp://0.0.0.0:" + StreamVlcjWorker.STREAMING_PORT);
+            this.mediaPlayerComponent.mediaPlayer().media().play("rtp://0.0.0.0:" + NodeStreamVlcjWorker.STREAMING_PORT);
 
             while (this.wasReleased == false){
                 synchronized (this.lock){

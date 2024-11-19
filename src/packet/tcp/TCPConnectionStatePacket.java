@@ -16,13 +16,12 @@ public class TCPConnectionStatePacket extends TCPPacket{
 
 
     public TCPConnectionStatePacket(){
-        super(TCP_TYPE.CONNECTION_STATE);
-        this.protocol = null;
+        super(TCP_TYPE.CONTROL_CONNECTION_STATE);
     }
 
 
     public TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL protocol) {
-        super(TCP_TYPE.CONNECTION_STATE);
+        super(TCP_TYPE.CONTROL_CONNECTION_STATE);
         this.protocol = protocol;
     }
 

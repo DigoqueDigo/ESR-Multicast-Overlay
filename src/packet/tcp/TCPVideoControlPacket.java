@@ -22,9 +22,7 @@ public class TCPVideoControlPacket extends TCPPacket{
 
     public TCPVideoControlPacket(){
         super(TCP_TYPE.CONTROL_VIDEO);
-        this.protocol = null;
-        this.video = null;
-        this.data = null;
+        this.data = new byte[0];
     }
 
 
@@ -32,7 +30,7 @@ public class TCPVideoControlPacket extends TCPPacket{
         super(TCP_TYPE.CONTROL_VIDEO);
         this.protocol = protocol;
         this.video = video;
-        this.data = null;
+        this.data = new byte[0];
     }
 
 

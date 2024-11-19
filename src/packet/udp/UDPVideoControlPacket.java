@@ -19,8 +19,6 @@ public class UDPVideoControlPacket extends UDPPacket{
 
     public UDPVideoControlPacket(){
         super(UDP_TYPE.VIDEO_CONTROL);
-        this.protocol = null;
-        this.video = null;
     }
 
 

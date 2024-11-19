@@ -4,8 +4,8 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -17,15 +17,12 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     }
 
     private GRANDFATHER_PROTOCOL protocol;
-    private Set<String> grandparents;
+    private List<String> grandparents;
     private String video;
 
 
     public TCPGrandfatherControlPacket(){
         super(TCP_TYPE.CONTROL_GRANDFATHER);
-        this.protocol = null;
-        this.video = null;
-        this.grandparents = null;
     }
 
 
@@ -33,15 +30,15 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.video = video;
-        this.grandparents = new HashSet<>();
+        this.grandparents = new ArrayList<>();
     }
 
 
-    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, String video, Set<String> grandparents) {
+    public TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL protocol, String video, List<String> grandparents) {
         super(TCP_TYPE.CONTROL_GRANDFATHER);
         this.protocol = protocol;
         this.video = video;
-        this.grandparents = new HashSet<>(grandparents);
+        this.grandparents = grandparents.stream().collect(Collectors.toList());
     }
 
 
@@ -72,8 +69,8 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     }
 
 
-    public Set<String> getGrandparents(){
-        return this.grandparents.stream().collect(Collectors.toSet());
+    public List<String> getGrandparents(){
+        return this.grandparents.stream().collect(Collectors.toList());
     }
 
 
@@ -95,7 +92,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Output output = new Output(byteArrayOutputStream);
 
-        kryo.register(HashSet.class);
+        kryo.register(ArrayList.class);
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
         kryo.register(TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL.class);
@@ -114,7 +111,7 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         Input input = new Input(byteArrayInputStream);
 
-        kryo.register(HashSet.class);
+        kryo.register(ArrayList.class);
         kryo.register(TCPPacket.TCP_TYPE.class);
         kryo.register(TCPGrandfatherControlPacket.class);
         kryo.register(TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL.class);

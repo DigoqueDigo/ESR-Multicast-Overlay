@@ -52,7 +52,7 @@ public abstract class UDPPacket extends Packet{
     public String toString(){
         StringBuilder buffer = new StringBuilder();
         buffer.append("Type: " + this.type.name());
-        buffer.append("ID: " + this.id);
+        buffer.append("\tID: " + this.id);
         buffer.append(super.toString());
         return buffer.toString();
     }   

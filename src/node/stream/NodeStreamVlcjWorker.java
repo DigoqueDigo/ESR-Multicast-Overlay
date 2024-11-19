@@ -4,7 +4,7 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 
 
-public class StreamVlcjWorker implements Runnable{
+public class NodeStreamVlcjWorker implements Runnable{
 
     public static final int STREAMING_PORT = 7000;
 
@@ -16,7 +16,7 @@ public class StreamVlcjWorker implements Runnable{
     private final MediaPlayerFactory mediaPlayerFactory;
 
 
-    public StreamVlcjWorker(String clientIP, String fifo){
+    public NodeStreamVlcjWorker(String clientIP, String fifo){
         this.fifo = fifo;
         this.clientIP = clientIP;
         this.wasReleased = false;

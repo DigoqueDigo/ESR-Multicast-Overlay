@@ -1,6 +1,6 @@
 package client;
 import java.net.InetSocketAddress;
-import java.util.Set;
+import java.util.List;
 import carrier.UDPCarrier;
 import packet.udp.UDPPacket;
 import packet.udp.UDPVideoListPacket;
@@ -18,7 +18,7 @@ public class ClientVideoGather{
     }
 
 
-    public Set<String> getVideoList(){
+    public List<String> getVideoList(){
 
         try{
 
@@ -28,6 +28,8 @@ public class ClientVideoGather{
             UDPPacket udpPacket = null;
             UDPVideoListPacket videoListPacket = new UDPVideoListPacket();
 
+            System.out.println("ClientVideoGather send: " + videoListPacket);
+
             udpCarrier.connect(socketAddress);
             udpCarrier.send(videoListPacket);
             udpCarrier.disconnect();
@@ -35,6 +37,7 @@ public class ClientVideoGather{
             while ((udpPacket = udpCarrier.receive()) == null) {}
 
             videoListPacket = (UDPVideoListPacket) udpPacket;
+            System.out.println("ClientVideoGather receive: " + videoListPacket);
 
             udpCarrier.close();
             return videoListPacket.getVideos();

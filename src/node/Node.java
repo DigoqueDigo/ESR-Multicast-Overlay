@@ -1,7 +1,7 @@
 package node;
 import org.json.JSONObject;
 import bootstrapper.Bootstrapper;
-import node.stream.StreamWaitClient;
+import node.stream.NodeStreamWaitClient;
 import packet.tcp.TCPPacket;
 import service.core.CoreWorker;
 import service.establishconnection.FloodEstablishConnection;
@@ -51,7 +51,7 @@ public class Node {
         workers.add(new Thread(new NodeFloodControlWorker(nodeName,videoProviders,controlBuffer,connectionBuffer,outBuffers)));
 
         if (isEdge){
-            workers.add(new Thread(new StreamWaitClient(videoProviders,inBuffer,videoStreams)));
+            workers.add(new Thread(new NodeStreamWaitClient(videoProviders,inBuffer,videoStreams)));
         }
 
         for (Thread worker : workers){

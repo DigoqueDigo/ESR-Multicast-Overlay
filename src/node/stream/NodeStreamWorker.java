@@ -4,13 +4,13 @@ import struct.BoundedBuffer;
 import utils.IO;
 
 
-public class StreamWorker implements Runnable{
+public class NodeStreamWorker implements Runnable{
 
     private String clientIP;
     private BoundedBuffer<byte[]> videoBuffer;
 
 
-    public StreamWorker(String clientIP, BoundedBuffer<byte[]> videoBuffer){
+    public NodeStreamWorker(String clientIP, BoundedBuffer<byte[]> videoBuffer){
         this.clientIP = clientIP;
         this.videoBuffer = videoBuffer;
     }
@@ -26,8 +26,8 @@ public class StreamWorker implements Runnable{
                 throw new IOException("StreamWorker can not create fifo: " + fifoName);
             } else System.out.println("StreamWorker create fifo: " + fifoName);
 
-            Thread writer = new Thread(new StreamWriterWorker(this.videoBuffer,fifoName));
-            Thread reader = new Thread(new StreamVlcjWorker(this.clientIP,fifoName));
+            Thread writer = new Thread(new NodeStreamWriterWorker(this.videoBuffer,fifoName));
+            Thread reader = new Thread(new NodeStreamVlcjWorker(this.clientIP,fifoName));
 
             reader.start();
 

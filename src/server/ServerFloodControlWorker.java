@@ -40,7 +40,7 @@ public class ServerFloodControlWorker implements Runnable{
             TCPPacket tcpPacket;
 
             while ((tcpPacket = this.controlBuffer.pop()) != null){
-                if (tcpPacket.getType() == TCP_TYPE.CONNECTION_STATE){
+                if (tcpPacket.getType() == TCP_TYPE.CONTROL_CONNECTION_STATE){
                     this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
                 }
             }
