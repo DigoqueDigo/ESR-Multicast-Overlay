@@ -46,7 +46,11 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
 
 
     public TCPGrandfatherControlPacket(TCPGrandfatherControlPacket packet) {
-        super(packet.getType(), packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
         this.protocol = packet.getProtocol();
         this.video = packet.getVideo();
         this.grandparents = packet.getGrandparents();
@@ -77,9 +81,9 @@ public class TCPGrandfatherControlPacket extends TCPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tProtocol: ").append(this.protocol.name());
-        buffer.append("\tVideo: ").append(this.video);
-        buffer.append("\tGrandfather: ").append(this.grandparents);
+        buffer.append("\tProtocol: " + this.protocol.name());
+        buffer.append("\tVideo: " + this.video);
+        buffer.append("\tGrandfather: " + this.grandparents);
         return buffer.toString();
     }
 

@@ -28,16 +28,20 @@ public class TCPVideoControlPacket extends TCPPacket{
     }
 
 
-    public TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL protocol, String video, byte[] data, String receiver, String sender){
-        super(TCP_TYPE.CONTROL_VIDEO, receiver, sender);
+    public TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL protocol, String video){
+        super(TCP_TYPE.CONTROL_VIDEO);
         this.protocol = protocol;
         this.video = video;
-        this.data = data;
+        this.data = null;
     }
 
 
     public TCPVideoControlPacket(TCPVideoControlPacket packet){
-        super(packet.getType(), packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
         this.protocol = packet.getProtocol();
         this.video = packet.getVideo();
         this.data = packet.getData();
@@ -68,9 +72,9 @@ public class TCPVideoControlPacket extends TCPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tProtocol: ").append(this.protocol.name());
-        buffer.append("\tVideo: ").append(this.video);
-        buffer.append("\tData length: ").append(this.data.length);
+        buffer.append("\tProtocol: " + this.protocol.name());
+        buffer.append("\tVideo: " + this.video);
+        buffer.append("\tData length: " + this.data.length);
         return buffer.toString();
     }
 

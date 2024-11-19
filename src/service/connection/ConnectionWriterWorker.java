@@ -28,7 +28,7 @@ public class ConnectionWriterWorker implements Runnable{
 
             while ((tcpPacket = this.outBuffer.pop()) != null){
                 tcpPacket = tcpPacket.clone();
-                tcpPacket.setSender(this.myInterface);
+                tcpPacket.setSenderIP(this.myInterface);
                 tcpCarrier.send(tcpPacket);
             }
         }

@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import packet.tcp.TCPVideoControlPacket;
-import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 
 
 public class UDPVideoControlPacket extends UDPPacket{
@@ -34,7 +32,11 @@ public class UDPVideoControlPacket extends UDPPacket{
 
 
     public UDPVideoControlPacket(UDPVideoControlPacket packet){
-        super(UDP_TYPE.VIDEO_CONTROL, packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
         this.protocol = packet.getProtocol();
         this.video = packet.getVideo();
     }
@@ -56,21 +58,11 @@ public class UDPVideoControlPacket extends UDPPacket{
     }
 
 
-    public TCPVideoControlPacket convert2TCP(){
-        return new TCPVideoControlPacket(
-            OVERLAY_VIDEO_PROTOCOL.valueOf(this.protocol.name()),
-            this.video,
-            new byte[0],
-            this.getReceiver(),
-            this.getSender());
-    }
-
-
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tProtocol: ").append(this.protocol.name());
-        buffer.append("\tVideo: ").append(this.video);
+        buffer.append("\tProtocol: " + this.protocol.name());
+        buffer.append("\tVideo: " + this.video);
         return buffer.toString();
     }
 

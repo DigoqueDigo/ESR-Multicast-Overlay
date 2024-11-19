@@ -21,8 +21,8 @@ public abstract class TCPPacket extends Packet{
     }
 
 
-    public TCPPacket(TCP_TYPE type, String receiver, String sender){
-        super(receiver,sender);
+    public TCPPacket(TCP_TYPE type, String receiverIP, int receiverPort, String senderIP, int senderPort){
+        super(receiverIP,receiverPort,senderIP,senderPort);
         this.type = type;
     }
 
@@ -40,7 +40,7 @@ public abstract class TCPPacket extends Packet{
 
     public String toString(){
         StringBuilder buffer = new StringBuilder();
-        buffer.append("Type: ").append(this.type.name());
+        buffer.append("Type: " + this.type.name());
         buffer.append(super.toString());
         return buffer.toString();
     }

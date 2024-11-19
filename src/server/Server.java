@@ -1,11 +1,12 @@
 package server;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
+import bootstrapper.Bootstrapper;
 import packet.tcp.TCPPacket;
 import service.core.CoreWorker;
 import service.establishconnection.FloodEstablishConnection;
@@ -23,11 +24,11 @@ public class Server {
         String videoFolder = args[1];
         String bootstrapperIP = args[2];
 
-        BootstrapperGather bootstrapperGather = new BootstrapperGather(serverName,bootstrapperIP);
+        BootstrapperGather bootstrapperGather = new BootstrapperGather(serverName,bootstrapperIP,Bootstrapper.PORT);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
 
-        List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
-        .toList().stream().map(Object::toString).collect(Collectors.toList());
+        Set<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
+            .toList().stream().map(Object::toString).collect(Collectors.toSet());
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
@@ -38,7 +39,7 @@ public class Server {
         Timer timer = new Timer();
         TimerTask controlFlood = new ServerFloodTimer(serverName,videoFolder,outBuffers);
 
-        List<Thread> workers = new ArrayList<>();
+        Set<Thread> workers = new HashSet<>();
 
         workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));

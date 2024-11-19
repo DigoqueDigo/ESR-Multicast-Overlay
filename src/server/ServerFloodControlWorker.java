@@ -28,7 +28,7 @@ public class ServerFloodControlWorker implements Runnable{
 
 
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
-        String neighbour = connectionStatePacket.getSender();
+        String neighbour = connectionStatePacket.getSenderIP();
         this.outBuffers.removeBoundedBuffer(neighbour);
     }
 

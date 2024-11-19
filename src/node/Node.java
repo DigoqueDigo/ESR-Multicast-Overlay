@@ -1,5 +1,6 @@
 package node;
 import org.json.JSONObject;
+import bootstrapper.Bootstrapper;
 import node.stream.StreamWaitClient;
 import packet.tcp.TCPPacket;
 import service.core.CoreWorker;
@@ -10,8 +11,8 @@ import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
 import struct.VideoProviders;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -22,11 +23,11 @@ public class Node {
         String nodeName = args[0];
         String bootstrapperIP = args[1];
 
-        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
+        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP,Bootstrapper.PORT);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
 
-        List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
-            .toList().stream().map(Object::toString).collect(Collectors.toList());
+        Set<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
+            .toList().stream().map(Object::toString).collect(Collectors.toSet());
 
         boolean isEdge = bootstrapperInfo.getBoolean("edge");
         System.out.println("EDGE STATUS: " + isEdge);
@@ -41,7 +42,7 @@ public class Node {
 
         VideoProviders videoProviders = new VideoProviders();
 
-        List<Thread> workers = new ArrayList<>();
+        Set<Thread> workers = new HashSet<>();
 
         workers.add(new Thread(new WaitEstablishConnection(inBuffer,outBuffers)));
         workers.add(new Thread(new FloodEstablishConnection(connectionBuffer,inBuffer,outBuffers)));

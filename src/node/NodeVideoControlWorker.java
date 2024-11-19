@@ -43,7 +43,7 @@ public class NodeVideoControlWorker implements Runnable{
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
 
-        String requester = videoControlPacket.getSender();
+        String requester = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
 
         // saber que o requester esta interessado no video

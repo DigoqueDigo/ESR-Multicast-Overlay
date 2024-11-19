@@ -50,7 +50,7 @@ public class NodeFloodControlWorker implements Runnable{
         // inspeciono o pacote se nao tiver a minha assinatura
         if (tcpFloodPacket.getSignatures().contains(signature) == false){
 
-            String sender = tcpFloodPacket.getSender();
+            String sender = tcpFloodPacket.getSenderIP();
             List<String> videos = tcpFloodPacket.getVideos();
 
             Long serverTimeStamp = tcpFloodPacket.getTimestamp();
@@ -105,7 +105,7 @@ public class NodeFloodControlWorker implements Runnable{
 
     private void handleGrandFatherRequest(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
-        String sender = tcpGrandfatherPacket.getSender();
+        String sender = tcpGrandfatherPacket.getSenderIP();
         String video = tcpGrandfatherPacket.getVideo();
         Set<String> providers = this.videoProviders.getProviders(video);
 
@@ -125,7 +125,7 @@ public class NodeFloodControlWorker implements Runnable{
 
     private void handleGrandFatherReply(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
-        String sender = tcpGrandfatherPacket.getSender();
+        String sender = tcpGrandfatherPacket.getSenderIP();
         String video = tcpGrandfatherPacket.getVideo();
         Set<String> providers = tcpGrandfatherPacket.getGrandparents();
 
@@ -138,7 +138,7 @@ public class NodeFloodControlWorker implements Runnable{
     private void handleConnectionLost(TCPConnectionStatePacket tcpStatePacket){
 
         // informar o ConnectionWriteWorker que a ligacao terminou
-        String neighbour = tcpStatePacket.getSender();
+        String neighbour = tcpStatePacket.getSenderIP();
         this.outBuffers.put(neighbour,tcpStatePacket);
 
         // remover o neighbour dos pais e eliminar o buffer

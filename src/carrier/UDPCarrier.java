@@ -159,8 +159,12 @@ public class UDPCarrier{
                 if (udpResultPacket == null && udpAckPacket == null){
 
                     udpResultPacket = receiveUDPPacket;
-                    udpResultPacket.setSender(receivePacket.getAddress().getHostAddress());
-                    udpResultPacket.setReceiver(this.socket.getLocalAddress().getHostAddress());
+
+                    udpResultPacket.setSenderIP(receivePacket.getAddress().getHostAddress());
+                    udpResultPacket.setSenderPort(receivePacket.getPort());
+
+                    udpResultPacket.setReceiverIP(this.socket.getLocalAddress().getHostAddress());
+                    udpResultPacket.setReceiverPort(this.socket.getLocalPort());
 
                     udpAckPacket = new UDPAckPacket();
                     udpAckPacket.setID(udpResultPacket.getID());

@@ -14,13 +14,12 @@ public class UDPAckPacket extends UDPPacket{
     }
 
 
-    public UDPAckPacket(String receiver, String sender){
-        super(UDP_TYPE.ACK, receiver, sender);
-    }
-
-
     public UDPAckPacket(UDPAckPacket packet){
-        super(UDP_TYPE.ACK, packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
     }
 
 
@@ -30,10 +29,8 @@ public class UDPAckPacket extends UDPPacket{
     }
 
 
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append(super.toString());
-        return buffer.toString();
+    public String toString(){
+        return super.toString();
     }
 
 

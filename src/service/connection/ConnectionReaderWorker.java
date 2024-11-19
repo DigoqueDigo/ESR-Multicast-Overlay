@@ -31,7 +31,7 @@ public class ConnectionReaderWorker implements Runnable{
             TCPCarrier tcpCarrier = new TCPCarrier(this.inputStream,null);
 
             while ((receivePacket = tcpCarrier.receive()) != null){
-                receivePacket.setReceiver(myInterface);
+                receivePacket.setReceiverIP(myInterface);
                 this.inBuffer.push(receivePacket);
             }
         }
@@ -39,10 +39,9 @@ public class ConnectionReaderWorker implements Runnable{
         catch (Exception e){
 
             // informar que a conexão perdeu-se
-            TCPConnectionStatePacket tcpStatePacket = new TCPConnectionStatePacket(
-                CONNECTION_STATE_PROTOCOL.CONNECTION_LOST,
-                this.myInterface,
-                this.neighbourInterface);
+            TCPConnectionStatePacket tcpStatePacket = new TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST);
+            tcpStatePacket.setReceiverIP(this.myInterface);
+            tcpStatePacket.setSenderIP(this.neighbourInterface);
 
             try {
                 this.inBuffer.push(tcpStatePacket);

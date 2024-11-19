@@ -26,7 +26,11 @@ public class UDPVideoListPacket extends UDPPacket{
 
 
     public UDPVideoListPacket(UDPVideoListPacket packet){
-        super(UDP_TYPE.VIDEO_CONTROL, packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
         this.videos = packet.getVideos();
     }
 
@@ -45,7 +49,7 @@ public class UDPVideoListPacket extends UDPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tVideo: ").append(this.videos);
+        buffer.append("\tVideo: " + this.videos);
         return buffer.toString();
     }
 

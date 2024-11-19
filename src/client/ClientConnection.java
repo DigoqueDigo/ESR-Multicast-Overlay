@@ -43,9 +43,8 @@ public class ClientConnection{
 
             udpCarrier.connect(socketAddress);
             udpCarrier.send(videoCancel);
-
-            udpCarrier.close();
             udpCarrier.disconnect();
+            udpCarrier.close();
         }
 
         catch (Exception e){

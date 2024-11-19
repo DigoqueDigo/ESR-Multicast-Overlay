@@ -21,8 +21,8 @@ public abstract class UDPPacket extends Packet{
     }
 
 
-    public UDPPacket(UDP_TYPE type, String receiver, String sender){
-        super(receiver, sender);
+    public UDPPacket(UDP_TYPE type, String receiverIP, int receiverPort, String senderIP, int senderPort){
+        super(receiverIP,receiverPort,senderIP,senderPort);
         this.type = type;
         this.id = System.nanoTime();
     }
@@ -51,8 +51,8 @@ public abstract class UDPPacket extends Packet{
 
     public String toString(){
         StringBuilder buffer = new StringBuilder();
-        buffer.append("Type: ").append(this.type.name());
-        buffer.append("ID: ").append(this.id);
+        buffer.append("Type: " + this.type.name());
+        buffer.append("ID: " + this.id);
         buffer.append(super.toString());
         return buffer.toString();
     }   

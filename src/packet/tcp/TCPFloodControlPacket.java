@@ -32,7 +32,11 @@ public class TCPFloodControlPacket extends TCPPacket{
 
 
     public TCPFloodControlPacket(TCPFloodControlPacket packet) {
-        super(packet.getType(), packet.getReceiver(), packet.getSender());
+        super(packet.getType(),
+            packet.getReceiverIP(),
+            packet.getReceiverPort(),
+            packet.getSenderIP(),
+            packet.getSenderPort());
         this.serverName = packet.getServerName();
         this.timestamp = packet.getTimestamp();
         this.signatures = packet.getSignatures();
@@ -74,10 +78,10 @@ public class TCPFloodControlPacket extends TCPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tServerName: ").append(this.serverName);
-        buffer.append("\tTimestamp: ").append(this.timestamp);
-        buffer.append("\tSignatures: ").append(this.signatures);
-        buffer.append("\tVideos: ").append(this.videos);
+        buffer.append("\tServerName: " + this.serverName);
+        buffer.append("\tTimestamp: " + this.timestamp);
+        buffer.append("\tSignatures: " + this.signatures);
+        buffer.append("\tVideos: " + this.videos);
         return buffer.toString();
     }
 

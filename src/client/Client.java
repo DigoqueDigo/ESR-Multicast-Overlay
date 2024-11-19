@@ -1,8 +1,9 @@
 package client;
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
+import bootstrapper.Bootstrapper;
 import service.gather.BootstrapperGather;
 
 
@@ -13,16 +14,13 @@ public class Client{
         String nodeName = args[0];
         String bootstrapperIP = args[1];
 
-        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP);
+        BootstrapperGather bootstrapperGather = new BootstrapperGather(nodeName,bootstrapperIP,Bootstrapper.PORT);
         JSONObject bootstrapperInfo = bootstrapperGather.getBootstrapperInfo();
 
-        List<String> neighbours = bootstrapperInfo.getJSONArray("neighbours")
-            .toList().stream().map(Object::toString).collect(Collectors.toList());
+        Set<String> edgeNodes = bootstrapperInfo.getJSONArray("neighbours")
+            .toList().stream().map(Object::toString).collect(Collectors.toSet());
 
-        List<String> videos = bootstrapperInfo.getJSONArray("videos")
-            .toList().stream().map(Object::toString).collect(Collectors.toList());
-
-        ClientUI clientUI = new ClientUI(neighbours, videos);
+        ClientUI clientUI = new ClientUI(edgeNodes);
         clientUI.start();
         clientUI.close();
     }

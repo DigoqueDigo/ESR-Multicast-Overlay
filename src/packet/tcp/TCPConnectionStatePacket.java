@@ -21,14 +21,18 @@ public class TCPConnectionStatePacket extends TCPPacket{
     }
 
 
-    public TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL protocol, String receiver, String sender) {
-        super(TCP_TYPE.CONNECTION_STATE, receiver, sender);
+    public TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL protocol) {
+        super(TCP_TYPE.CONNECTION_STATE);
         this.protocol = protocol;
     }
 
 
     public TCPConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
-        super(TCP_TYPE.CONNECTION_STATE, tcpStatePacket.getReceiver(), tcpStatePacket.getSender());
+        super(tcpStatePacket.getType(),
+            tcpStatePacket.getReceiverIP(),
+            tcpStatePacket.getReceiverPort(),
+            tcpStatePacket.getSenderIP(),
+            tcpStatePacket.getSenderPort());
         this.protocol = tcpStatePacket.getProtocol();
     }
 
@@ -46,7 +50,7 @@ public class TCPConnectionStatePacket extends TCPPacket{
     public String toString() {
         StringBuilder buffer = new StringBuilder();
         buffer.append(super.toString());
-        buffer.append("\tProtocol: ").append(this.protocol.name());
+        buffer.append("\tProtocol: " + this.protocol.name());
         return buffer.toString();
     }
 

@@ -1,6 +1,7 @@
 package node.stream;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
+import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL;
@@ -38,14 +39,20 @@ public class StreamWaitClient implements Runnable{
         }
 
         UDPVideoControlPacket udpVideoControlPacket = (UDPVideoControlPacket) videoControlPacket;
-        TCPVideoControlPacket tcpVideoControlPacket = udpVideoControlPacket.convert2TCP();
+        TCPVideoControlPacket tcpVideoControlPacket = new TCPVideoControlPacket(
+            OVERLAY_VIDEO_PROTOCOL.valueOf(udpVideoControlPacket.getProtocol().name()),
+            udpVideoControlPacket.getVideo());
+
+        tcpVideoControlPacket.setReceiverIP(udpVideoControlPacket.getReceiverIP());
+        tcpVideoControlPacket.setSenderIP(udpVideoControlPacket.getSenderIP());
+
         this.inBuffer.push(tcpVideoControlPacket);
     }
 
 
     private void handleVideoControlRequest(UDPVideoControlPacket videoControlPacket){
 
-        String client = videoControlPacket.getSender();
+        String client = videoControlPacket.getSenderIP();
         this.streamBuffers.addBoundedBuffer(client);
 
         BoundedBuffer<byte[]> streamBuffer = this.streamBuffers.getBoundedBuffer(client);
@@ -57,12 +64,14 @@ public class StreamWaitClient implements Runnable{
 
     private void handleVideoList(UDPVideoListPacket videoListPacket) throws SocketException, IOException, ClassNotFoundException{
 
-        String client = videoListPacket.getSender();
+        String clientIP = videoListPacket.getSenderIP();
+        int clientPort = videoListPacket.getSenderPort();
+
         Set<String> videos = this.videoProviders.getVideos();
         UDPVideoListPacket response = new UDPVideoListPacket(videos);
 
         UDPCarrier udpCarrier = new UDPCarrier();
-        InetSocketAddress socketAddress = new InetSocketAddress(client,CLIENT_ESTABLISH_CONNECTION_PORT);
+        InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
 
         udpCarrier.connect(socketAddress);
         udpCarrier.send(response);
