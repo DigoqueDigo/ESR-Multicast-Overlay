@@ -14,7 +14,6 @@ import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
-import struct.VideoConsumers;
 
 
 public class Server {
@@ -37,8 +36,6 @@ public class Server {
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
-        VideoConsumers videoConsumers = new VideoConsumers();
-
 
         Timer timer = new Timer();
         TimerTask controlFlood = new ServerFloodTimer(serverName,videoFolder,outBuffers);
@@ -50,7 +47,7 @@ public class Server {
 
         workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new ServerFloodControlWorker(controlBuffer,outBuffers)));
-        workers.add(new Thread(new ServerVideoControlWorker(videoConsumers,videoBuffer,outBuffers)));
+        workers.add(new Thread(new ServerVideoControlWorker(videoFolder,videoBuffer,outBuffers)));
 
         timer.schedule(controlFlood,ServerFloodTimer.DELAY,ServerFloodTimer.PERIOD);
 

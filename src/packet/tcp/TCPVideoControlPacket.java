@@ -34,6 +34,14 @@ public class TCPVideoControlPacket extends TCPPacket{
     }
 
 
+    public TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL protocol, String video, byte[] data){
+        super(TCP_TYPE.CONTROL_VIDEO);
+        this.protocol = protocol;
+        this.video = video;
+        this.data = data;
+    }
+
+
     public TCPVideoControlPacket(TCPVideoControlPacket packet){
         super(packet.getType(),
             packet.getReceiverIP(),

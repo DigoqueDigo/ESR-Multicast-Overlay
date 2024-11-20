@@ -38,6 +38,11 @@ public class VideoConsumers{
     }
 
 
+    public Set<String> getVideos(){
+        return this.consumers.keySet();
+    }
+
+
     public boolean containsKey(String video){
         return this.consumers.containsKey(video);
     }

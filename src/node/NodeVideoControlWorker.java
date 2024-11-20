@@ -3,8 +3,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
+import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 import packet.tcp.TCPPacket.TCP_TYPE;
 import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 import struct.BoundedBuffer;
@@ -22,9 +24,9 @@ public class NodeVideoControlWorker implements Runnable{
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public NodeVideoControlWorker(VideoProviders videoProviders, VideoConsumers videoConsumers, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public NodeVideoControlWorker(VideoProviders videoProviders, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.videoProviders = videoProviders;
-        this.videoConsumers = videoConsumers;
+        this.videoConsumers = new VideoConsumers();
         this.videoBuffer = videoBuffer;
         this.streamBuffers = streaBuffers;
         this.outBuffers = outBuffers;
@@ -35,13 +37,17 @@ public class NodeVideoControlWorker implements Runnable{
 
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
+        boolean firstRequest = !this.videoConsumers.containsKey(video);
 
-        // guardar os gajos interessado no video
+        // registar um consumer do video
         this.videoConsumers.put(video,consumer);
 
-        // encaminhar o request para o melhor provider do video
-        String bestProvider = this.videoProviders.getBestProvider(video);
-        this.outBuffers.put(bestProvider,videoControlPacket);
+        // se for o primeiro pedido deste video
+        // encaminhar o request para o melhor provider
+        if (firstRequest){
+            String bestProvider = this.videoProviders.getBestProvider(video);
+            this.outBuffers.put(bestProvider,videoControlPacket);
+        }
     }
 
 
@@ -60,7 +66,7 @@ public class NodeVideoControlWorker implements Runnable{
         }
 
         // se e um cliente, entao nao esta nos outbuffers
-        // se o consumer for um client, tenho de parar a stream
+        // sendo um cliente tenho de parar a stream
         if (this.outBuffers.containsKey(consumer) == false){
             this.streamBuffers.put(consumer,new byte[0]);
             this.streamBuffers.removeBoundedBuffer(consumer);
@@ -87,19 +93,50 @@ public class NodeVideoControlWorker implements Runnable{
     }
 
 
+    private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
+
+        String consumer = connectionStatePacket.getSenderIP();
+
+        for (String video : this.videoConsumers.getVideos()){
+
+            this.videoConsumers.remove(video,consumer);
+
+            // se ninguem esta interessado no video
+            // informar o provider que pode cancelar a transmissao
+            if (this.videoConsumers.containsKey(video) == false){
+                TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL,video);
+                String provider = this.videoProviders.getBestProvider(video);
+                this.outBuffers.put(provider,videoControlPacket);
+            }
+
+            if (this.outBuffers.containsKey(consumer) == false){
+                this.streamBuffers.put(consumer,new byte[0]);
+                this.streamBuffers.removeBoundedBuffer(consumer);
+            }
+        }
+    }
+
+
     public void run(){
 
         TCPPacket tcpPacket;
         Map<TCP_TYPE,Consumer<TCPPacket>> handlers = new HashMap<>();
         Map<OVERLAY_VIDEO_PROTOCOL,Consumer<TCPVideoControlPacket>> videoHandlers = new HashMap<>();
+        Map<CONNECTION_STATE_PROTOCOL,Consumer<TCPConnectionStatePacket>> connectionStateHandlers = new HashMap<>();
 
         videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REQUEST, packet -> this.handleControlVideoRequest(packet));
         videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY, packet -> this.handleControlVideoReply(packet));
         videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL, packet -> this.handleControlVideoCancel(packet));
+        connectionStateHandlers.put(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST, packet -> this.handleConnectionLost(packet));
 
         handlers.put(TCP_TYPE.CONTROL_VIDEO, packet -> {
             TCPVideoControlPacket videoControlPacket = (TCPVideoControlPacket) packet;
             videoHandlers.get(videoControlPacket.getProtocol()).accept(videoControlPacket);
+        });
+
+        handlers.put(TCP_TYPE.CONTROL_CONNECTION_STATE, packet -> {
+            TCPConnectionStatePacket connectionStatePacket = (TCPConnectionStatePacket) packet;
+            connectionStateHandlers.get(connectionStatePacket.getProtocol()).accept(connectionStatePacket);
         });
 
         while ((tcpPacket = this.videoBuffer.pop()) != null){

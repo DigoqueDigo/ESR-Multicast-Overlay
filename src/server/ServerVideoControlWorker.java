@@ -1,6 +1,7 @@
 package server;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
@@ -10,18 +11,19 @@ import packet.tcp.TCPPacket.TCP_TYPE;
 import packet.tcp.TCPVideoControlPacket;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
-import struct.VideoConsumers;
 
 
 public class ServerVideoControlWorker implements Runnable{
 
-    private VideoConsumers videoConsumers;
+    private String videoFolder;
+    private Map<String,CopyOnWriteArrayList<String>> videoCatchers;
     private BoundedBuffer<TCPPacket> videoBuffer;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public ServerVideoControlWorker(VideoConsumers videoConsumers, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
-        this.videoConsumers = videoConsumers;
+    public ServerVideoControlWorker(String videoFolfer, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
+        this.videoFolder = videoFolfer;
+        this.videoCatchers = new HashMap<>();
         this.videoBuffer = videoBuffer;
         this.outBuffers = outBuffers;
     }
@@ -29,26 +31,51 @@ public class ServerVideoControlWorker implements Runnable{
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
 
-        System.out.println("POR IMPLEMENTAR");
+        String consumer = videoControlPacket.getSenderIP();
+        String video = videoControlPacket.getVideo();
+        boolean startCatcher = !this.videoCatchers.containsKey(video);
 
+        this.videoCatchers.putIfAbsent(video,new CopyOnWriteArrayList<>());
+        this.videoCatchers.get(video).add(consumer);
+
+        if (startCatcher){
+            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+            ServerVideoCatcher serverVideoCatcher = new ServerVideoCatcher(video,videoFolder,consumers,outBuffers);
+            new Thread(serverVideoCatcher).start();
+        }
     }
 
-    private void handleControlVideoReply(TCPVideoControlPacket videoControlPacket){
-
-        System.out.println("POR IMPLEMENTAR");
-
-    }
 
     private void handleControlVideoCancel(TCPVideoControlPacket videoControlPacket){
 
-        System.out.println("POR IMPLEMENTAR");
-        
+        String consumer = videoControlPacket.getSenderIP();
+        String video = videoControlPacket.getVideo();
+
+        if (this.videoCatchers.containsKey(video)){
+
+            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+            consumers.remove(consumer);
+
+            if (consumers.size() == 0){
+                this.videoCatchers.remove(video);
+            }
+        }
     }
 
 
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
 
-        System.out.println("POR IMPLEMENTAR");
+        String consumer = connectionStatePacket.getSenderIP();
+
+        for (String video : this.videoCatchers.keySet()){
+
+            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+            consumers.remove(consumer);
+
+            if (consumers.size() == 0){
+                this.videoCatchers.remove(video);
+            }
+        }
     }
 
 
@@ -60,7 +87,6 @@ public class ServerVideoControlWorker implements Runnable{
         Map<CONNECTION_STATE_PROTOCOL,Consumer<TCPConnectionStatePacket>> connectionStateHandlers = new HashMap<>();
 
         videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REQUEST, packet -> this.handleControlVideoRequest(packet));
-        videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY, packet -> this.handleControlVideoReply(packet));
         videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL, packet -> this.handleControlVideoCancel(packet));
         connectionStateHandlers.put(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST, packet -> this.handleConnectionLost(packet));
 

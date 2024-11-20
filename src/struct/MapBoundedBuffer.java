@@ -35,7 +35,8 @@ public class MapBoundedBuffer <K,V>{
 
 
     public void put(K key, V value){
-        this.boundedBuffers.get(key).push(value);
+        try {this.boundedBuffers.get(key).push(value);}
+        catch (Exception e) {e.printStackTrace();}
     }
 
 

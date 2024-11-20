@@ -43,7 +43,7 @@ public class ConnectionWorker implements Runnable{
             reader.join();
             writer.join();
 
-            socket.close();
+            System.out.println("ConnectionWorker finished");
         }
 
         catch (Exception e){
