@@ -1,11 +1,12 @@
 package struct;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,80 +23,176 @@ public class VideoProviders{
      * videoA -> [(O1,165),(O5,162)]
      * videoB -> [(O2,100)]
      */
-    private ConcurrentMap<String,List<Pair<String,Long>>> providers;
-    private ConcurrentMap<String,Long> updates;
+    private ReentrantLock lock;
+    private Map<String,Long> updates;
+    private Map<String,List<Pair<String,Long>>> providers;
 
 
     public VideoProviders(){
-        this.providers = new ConcurrentHashMap<>();
-        this.updates = new ConcurrentHashMap<>();
+        this.lock = new ReentrantLock();
+        this.updates = new HashMap<>();
+        this.providers = new HashMap<>();
     }
 
 
     public void addProvider(String video, String provider, Long timestamp){
 
-        this.providers.putIfAbsent(video,new ArrayList<>());
+        try{
+            this.lock.lock();
+            this.providers.putIfAbsent(video,new ArrayList<>());
 
-        Long oldValue = this.providers.get(video).stream()
-            .filter(x -> x.getLeft().equals(provider))
-            .map(x -> x.getRight())
-            .findFirst().orElse(timestamp);
+            Long oldValue = this.providers.get(video).stream()
+                .filter(x -> x.getLeft().equals(provider))
+                .map(x -> x.getRight())
+                .findFirst().orElse(timestamp);
 
-        timestamp = Math.round(oldValue * CURRENT_RATING_WEIGHT + timestamp * NEW_TIMESTAMP_WEIGHT);
-        Pair<String,Long> entry = Pair.of(provider,timestamp);
+            timestamp = Math.round(oldValue * CURRENT_RATING_WEIGHT + timestamp * NEW_TIMESTAMP_WEIGHT);
+            Pair<String,Long> entry = Pair.of(provider,timestamp);
 
-        this.providers.get(video).removeIf(x -> x.getLeft().equals(provider));
-        this.providers.get(video).add(entry);
-        this.updates.put(provider,System.nanoTime());
+            this.providers.get(video).removeIf(x -> x.getLeft().equals(provider));
+            this.providers.get(video).add(entry);
+            this.updates.put(provider,System.nanoTime());
+        }
+
+        catch (Exception e) {e.printStackTrace();}
+
+        finally {this.lock.unlock();}
     }
 
 
     public void removeProvider(String provider){
-        this.providers.values().stream()
-            .forEach(providers -> providers.removeIf(x -> x.getLeft().equals(provider)));
-        this.updates.remove(provider);
+
+        try{
+
+            this.lock.lock();
+            this.updates.remove(provider);
+
+            for (List<Pair<String,Long>> providerList : this.providers.values()){
+                providerList.removeIf(x -> x.getLeft().equals(provider));
+            }
+        }
+
+        catch (Exception e) {e.printStackTrace();}
+
+        finally {this.lock.unlock();}
     }
 
 
     public void clear(){
-        this.providers.clear();
-        this.updates.clear();
+
+        try{
+            this.lock.lock();
+            this.updates.clear();
+            this.providers.clear();
+        }
+
+        catch (Exception e) {e.printStackTrace();}
+
+        finally {this.lock.unlock();}
     }
 
 
     public Set<String> getVideos(){
-        return this.providers.keySet();
+
+        try{
+            this.lock.lock();
+            return this.providers.keySet();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+        finally {this.lock.unlock();}
     }
 
 
     public Set<String> getProviders(String video){
-        return this.providers.containsKey(video) ?
-            this.providers.get(video).stream()
-                .map(Pair::getLeft)
-                .collect(Collectors.toSet()) :
-            new HashSet<>();
+
+        try{
+
+            this.lock.lock();
+            Set<String> videoProviders = new HashSet<>();
+
+            if (this.providers.containsKey(video)){
+                for (Pair<String,Long> videoProvider : this.providers.get(video)){
+                    videoProviders.add(videoProvider.getLeft());
+                }
+            }
+
+            return videoProviders;
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+        finally {this.lock.unlock();}
     }
 
 
     public String getBestProvider(String video){
-        return this.providers.get(video).stream()
-            .sorted(Comparator.comparingLong(x -> x.getRight()))
-            .map(Pair::getLeft)
-            .findFirst().orElse(null);
+
+        try{
+            this.lock.lock();
+            String bestProvider = null;
+
+            if (this.providers.containsKey(video)){
+                bestProvider = this.providers.get(video).stream()
+                    .sorted(Comparator.comparingLong(x -> x.getRight()))
+                    .map(Pair::getLeft)
+                    .findFirst()
+                    .orElse(null);
+            }
+
+            return bestProvider;
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+        finally {this.lock.unlock();}
     }
 
 
     public void deleteZombies(){
-        this.updates.entrySet().stream()
-            .filter(x -> System.nanoTime() - x.getValue() > ZOMBIE)
-            .forEach(x -> this.removeProvider(x.getKey()));
+
+        try{
+            this.lock.lock();
+            this.updates.entrySet().stream()
+                .filter(x -> System.nanoTime() - x.getValue() > ZOMBIE)
+                .forEach(x -> this.removeProvider(x.getKey()));
+        }
+
+        catch (Exception e) {e.printStackTrace();}
+
+        finally {this.lock.unlock();}
     }
 
 
     public String toString(){
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("VIDEO PROVIDERS (TIMESTAMPS)");
-        this.providers.entrySet().stream().forEach(x -> buffer.append("\n" + x.getKey() + "\t" + x.getValue()));
-        return buffer.toString();
+
+        try{
+            this.lock.lock();
+            StringBuilder buffer = new StringBuilder();
+
+            buffer.append("----- VIDEO PROVIDERS -----");
+            buffer.append(this.providers.entrySet().stream()
+                .map(entry -> entry.getKey() + " :: " + entry.getValue())
+                .collect(Collectors.joining("\n")));
+
+            return buffer.toString();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+        finally {this.lock.unlock();}
     }
 }

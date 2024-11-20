@@ -9,6 +9,7 @@ import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
+import struct.VideoConsumers;
 import struct.VideoProviders;
 import java.io.IOException;
 import java.util.HashSet;
@@ -37,10 +38,11 @@ public class Node {
         BoundedBuffer<TCPPacket> videoBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
 
+        MapBoundedBuffer<String,byte[]> streamBuffers = new MapBoundedBuffer<>();
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
-        MapBoundedBuffer<String,byte[]> videoStreams = new MapBoundedBuffer<>();
 
         VideoProviders videoProviders = new VideoProviders();
+        VideoConsumers videoConsumers = new VideoConsumers();
 
         Set<Thread> workers = new HashSet<>();
 
@@ -49,9 +51,10 @@ public class Node {
 
         workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new NodeFloodControlWorker(nodeName,videoProviders,controlBuffer,connectionBuffer,outBuffers)));
+        workers.add(new Thread(new NodeVideoControlWorker(videoProviders,videoConsumers,videoBuffer,streamBuffers,outBuffers)));
 
         if (isEdge){
-            workers.add(new Thread(new NodeStreamWaitClient(videoProviders,inBuffer,videoStreams)));
+            workers.add(new Thread(new NodeStreamWaitClient(videoProviders,inBuffer,streamBuffers)));
         }
 
         for (Thread worker : workers){

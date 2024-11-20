@@ -34,6 +34,7 @@ public class Server {
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> videoBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<String> connectionBuffer = new BoundedBuffer<>(10);
+
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
 
         Timer timer = new Timer();

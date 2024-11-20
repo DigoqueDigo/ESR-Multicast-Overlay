@@ -10,18 +10,18 @@ import struct.VideoProviders;
 
 public class NodeVideoControlWorker implements Runnable{
 
-  //  private VideoProviders parents;
-    private VideoConsumers videoTable;
+    private VideoProviders videoProviders;
+    private VideoConsumers videoConsumers;
     private BoundedBuffer<TCPPacket> videoBuffer;
-    private MapBoundedBuffer<String,byte[]> videoStreams;
+    private MapBoundedBuffer<String,byte[]> streamBuffers;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public NodeVideoControlWorker(VideoConsumers videoTable, VideoProviders parents, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> videoStreams, MapBoundedBuffer<String,TCPPacket> outBuffers){
-  //      this.parents = parents;
-        this.videoTable = videoTable;
+    public NodeVideoControlWorker(VideoProviders videoProviders, VideoConsumers videoConsumers, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
+        this.videoProviders = videoProviders;
+        this.videoConsumers = videoConsumers;
         this.videoBuffer = videoBuffer;
-        this.videoStreams = videoStreams;
+        this.streamBuffers = streaBuffers;
         this.outBuffers = outBuffers;
     }
 
@@ -43,29 +43,37 @@ public class NodeVideoControlWorker implements Runnable{
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
 
-        String requester = videoControlPacket.getSenderIP();
+        String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
 
-        // saber que o requester esta interessado no video
-        this.videoTable.put(video,requester);
+        // guardar os gajos interessado no video
+        this.videoConsumers.put(video,consumer);
 
-        // reencaminhar o pedido de video para o meu melhor pai
-    //    String bestParent = this.parents.getBestParent();
-    //    this.outBuffers.put(bestParent,videoControlPacket);
+        // encaminhar o request para o melhor provider do video
+        String bestProvider = this.videoProviders.getBestProvider(video);
+        this.outBuffers.put(bestProvider,videoControlPacket);
     }
 
 
     private void handleControlVideoCancel(TCPVideoControlPacket videoControlPacket){
 
+        String consumer = videoControlPacket.getSenderIP(); 
         String video = videoControlPacket.getVideo();
-        Set<String> requesters = this.videoTable.getNodes(video);
 
-        for (String requester : requesters){
+        // o consumer nao esta interessado no video
+        this.videoConsumers.remove(video,consumer);
 
-            // o cliente nao deseja continuar a receber o video
-            if (this.videoStreams.containsKey(requester)){
-                this.videoStreams.put(requester,new byte[0]);
-            }
+        // se deixou de haver consumers do video, encaminhar o cancel para o provider
+        if (this.videoConsumers.containsKey(video) == false){
+            String provider = this.videoProviders.getBestProvider(video);
+            this.outBuffers.put(provider,videoControlPacket);
+        }
+
+        // se e um cliente, entao nao esta nos outbuffers
+        // se o consumer for um client, tenho de parar a stream
+        if (this.outBuffers.containsKey(consumer) == false){
+            this.streamBuffers.put(consumer,new byte[0]);
+            this.streamBuffers.removeBoundedBuffer(consumer);
         }
     }
 
@@ -73,21 +81,19 @@ public class NodeVideoControlWorker implements Runnable{
     private void handleControlVideoReply(TCPVideoControlPacket videoControlPacket){
 
         String video = videoControlPacket.getVideo();
-        Set<String> requesters = this.videoTable.getNodes(video);
+        Set<String> consumers = this.videoConsumers.getConsumers(video);
 
         // iterar sobre quem esta interessado no video
-        for (String requester : requesters){
+        for (String consumer : consumers){
 
-            // o requester pode ser um cliente
-            if (this.videoStreams.containsKey(requester)){
-                this.videoStreams.put(requester,videoControlPacket.getData());
+            // encaminhar o reply para um nodo do overlay
+            if (this.outBuffers.containsKey(consumer)){
+                this.outBuffers.put(consumer,videoControlPacket);
             }
 
-            // se o requester nao e uma cliente, entao faz parte do overlay
-            else{
-                this.outBuffers.put(requester,videoControlPacket);
-            }
-        }    
+            // esperatar os dados na stream do cliente
+            else this.streamBuffers.put(consumer,videoControlPacket.getData());
+        }
     }
 
 

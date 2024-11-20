@@ -1,8 +1,8 @@
 package struct;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 public class VideoConsumers{
@@ -12,28 +12,33 @@ public class VideoConsumers{
      * video1 -> [O1, O2]
      * video2 -> [O1]
      */
-    ConcurrentMap<String,Set<String>> table;
+    Map<String,Set<String>> consumers;
 
 
     public VideoConsumers(){
-        this.table = new ConcurrentHashMap<>();
+        this.consumers = new HashMap<>();
     }
 
 
     public void put(String video, String node){
-        this.table.putIfAbsent(video,new HashSet<>());
-        this.table.get(video).add(node);
+        this.consumers.putIfAbsent(video,new HashSet<>());
+        this.consumers.get(video).add(node);
     }
 
 
     public void remove(String video, String node){
-        this.table.get(video).remove(node);
-        if (this.table.get(video).size() == 0)
-            this.table.remove(video);
+        this.consumers.get(video).remove(node);
+        if (this.consumers.get(video).size() == 0)
+            this.consumers.remove(video);
     }
 
 
-    public Set<String> getNodes(String video){
-        return this.table.get(video);
+    public Set<String> getConsumers(String video){
+        return this.consumers.get(video);
+    }
+
+
+    public boolean containsKey(String video){
+        return this.consumers.containsKey(video);
     }
 }

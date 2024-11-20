@@ -7,13 +7,13 @@ import struct.BoundedBuffer;
 
 public class NodeStreamWriterWorker implements Runnable{
 
-    private OutputStream fifo;
-    private BoundedBuffer<byte[]> videoBuffer;
+    private String fifo;
+    private BoundedBuffer<byte[]> streamBuffer;
 
 
-    public NodeStreamWriterWorker(BoundedBuffer<byte[]> videobuffer, String fifo) throws IOException{
-        this.videoBuffer = videobuffer;
-        this.fifo = new FileOutputStream(fifo);
+    public NodeStreamWriterWorker(BoundedBuffer<byte[]> streamBuffer, String fifo) throws IOException{
+        this.streamBuffer = streamBuffer;
+        this.fifo = fifo;
     }
 
 
@@ -22,13 +22,13 @@ public class NodeStreamWriterWorker implements Runnable{
         try{
 
             byte[] video_data;
+            OutputStream outputStream = new FileOutputStream(this.fifo);
 
-            // tenho de receber um array vazio para saber que cheguei ao fim
-            while ((video_data = this.videoBuffer.pop()) != null && video_data.length > 0){
-                this.fifo.write(video_data);
+            while ((video_data = this.streamBuffer.pop()) != null && video_data.length > 0){
+                outputStream.write(video_data);
             }
 
-            this.fifo.close();
+            outputStream.close();
         }
 
         catch (Exception e){

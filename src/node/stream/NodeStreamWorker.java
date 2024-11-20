@@ -7,12 +7,12 @@ import utils.IO;
 public class NodeStreamWorker implements Runnable{
 
     private String clientIP;
-    private BoundedBuffer<byte[]> videoBuffer;
+    private BoundedBuffer<byte[]> streamBuffer;
 
 
-    public NodeStreamWorker(String clientIP, BoundedBuffer<byte[]> videoBuffer){
+    public NodeStreamWorker(String clientIP, BoundedBuffer<byte[]> streamBuffer){
         this.clientIP = clientIP;
-        this.videoBuffer = videoBuffer;
+        this.streamBuffer = streamBuffer;
     }
 
 
@@ -24,15 +24,16 @@ public class NodeStreamWorker implements Runnable{
 
             if (IO.mkfifo(fifoName) != 0){
                 throw new IOException("StreamWorker can not create fifo: " + fifoName);
-            } else System.out.println("StreamWorker create fifo: " + fifoName);
+            }
 
-            Thread writer = new Thread(new NodeStreamWriterWorker(this.videoBuffer,fifoName));
+            else System.out.println("StreamWorker create fifo: " + fifoName);
+
+            Thread writer = new Thread(new NodeStreamWriterWorker(this.streamBuffer,fifoName));
             Thread reader = new Thread(new NodeStreamVlcjWorker(this.clientIP,fifoName));
 
             reader.start();
 
-            // o vlc tem de ser o primeiro a abrir o fifo
-            // isto nao assegura nada mas da algumas garantias
+            // isto nao garante nada, mas o vlc tem de ser o primeiro a abrir
             Thread.sleep(1000);
 
             writer.start();
@@ -42,7 +43,9 @@ public class NodeStreamWorker implements Runnable{
 
             if (IO.rm(fifoName) != 0){
                 throw new IOException("Can not remove fifo: " + fifoName);
-            } else System.out.println("StreamWorker remove fifo: " + fifoName);
+            }
+
+            else System.out.println("StreamWorker remove fifo: " + fifoName);
         }
 
         catch (Exception e){
