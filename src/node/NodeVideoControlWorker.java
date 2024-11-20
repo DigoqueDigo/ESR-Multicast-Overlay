@@ -1,7 +1,12 @@
 package node;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
+import packet.tcp.TCPPacket.TCP_TYPE;
+import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
 import struct.VideoConsumers;
@@ -23,21 +28,6 @@ public class NodeVideoControlWorker implements Runnable{
         this.videoBuffer = videoBuffer;
         this.streamBuffers = streaBuffers;
         this.outBuffers = outBuffers;
-    }
-
-
-    private void handleControlVideo(TCPVideoControlPacket videoControlPacket){
-        switch (videoControlPacket.getProtocol()){
-            case VIDEO_REQUEST:
-                this.handleControlVideoRequest(videoControlPacket);
-                break;
-            case VIDEO_CANCEL:
-                this.handleControlVideoCancel(videoControlPacket);
-                break;
-            case VIDEO_REPLY:
-                this.handleControlVideoReply(videoControlPacket);
-                break;
-        }
     }
 
 
@@ -99,27 +89,26 @@ public class NodeVideoControlWorker implements Runnable{
 
     public void run(){
 
-        try{
+        TCPPacket tcpPacket;
+        Map<TCP_TYPE,Consumer<TCPPacket>> handlers = new HashMap<>();
+        Map<OVERLAY_VIDEO_PROTOCOL,Consumer<TCPVideoControlPacket>> videoHandlers = new HashMap<>();
 
-            TCPPacket tcpPacket;
+        videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REQUEST, packet -> this.handleControlVideoRequest(packet));
+        videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY, packet -> this.handleControlVideoReply(packet));
+        videoHandlers.put(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL, packet -> this.handleControlVideoCancel(packet));
 
-            while ((tcpPacket = videoBuffer.pop()) != null){
+        handlers.put(TCP_TYPE.CONTROL_VIDEO, packet -> {
+            TCPVideoControlPacket videoControlPacket = (TCPVideoControlPacket) packet;
+            videoHandlers.get(videoControlPacket.getProtocol()).accept(videoControlPacket);
+        });
 
-                switch (tcpPacket.getType()){
+        while ((tcpPacket = this.videoBuffer.pop()) != null){
 
-                    case CONTROL_VIDEO:
-                        this.handleControlVideo((TCPVideoControlPacket) tcpPacket);
-                        break;
-
-                    default:
-                        System.out.println("StreamControl unknown packet: " + tcpPacket);
-                        break;
-                }
+            if (handlers.containsKey(tcpPacket.getType())){
+                handlers.get(tcpPacket.getType()).accept(tcpPacket);
             }
-        }
 
-        catch (Exception e){
-            e.printStackTrace();
+            else System.out.println("NodeVideoControlWorker unknown packet: " + tcpPacket);
         }
     }
 }

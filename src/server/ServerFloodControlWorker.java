@@ -1,4 +1,6 @@
 package server;
+import java.util.HashMap;
+import java.util.function.Consumer;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TCP_TYPE;
@@ -20,13 +22,6 @@ public class ServerFloodControlWorker implements Runnable{
     }
 
 
-    private void handleConnectionStatePacket(TCPConnectionStatePacket connectionStatePacket){
-        if (connectionStatePacket.getProtocol() == CONNECTION_STATE_PROTOCOL.CONNECTION_LOST){
-            this.handleConnectionLost(connectionStatePacket);
-        }
-    }
-
-
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
         String neighbour = connectionStatePacket.getSenderIP();
         this.outBuffers.removeBoundedBuffer(neighbour);
@@ -35,19 +30,23 @@ public class ServerFloodControlWorker implements Runnable{
 
     public void run(){
 
-        try{
+        TCPPacket tcpPacket;
+        HashMap<TCP_TYPE,Consumer<TCPPacket>> handlers = new HashMap<>();
+        HashMap<CONNECTION_STATE_PROTOCOL,Consumer<TCPConnectionStatePacket>> connectionStateHandlers = new HashMap<>();
 
-            TCPPacket tcpPacket;
+        connectionStateHandlers.put(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST, packet -> this.handleConnectionLost(packet));
+        handlers.put(TCP_TYPE.CONTROL_CONNECTION_STATE, packet -> {
+            TCPConnectionStatePacket connectionStatePacket = (TCPConnectionStatePacket) packet;
+            connectionStateHandlers.get(connectionStatePacket.getProtocol()).accept(connectionStatePacket);
+        });
 
-            while ((tcpPacket = this.controlBuffer.pop()) != null){
-                if (tcpPacket.getType() == TCP_TYPE.CONTROL_CONNECTION_STATE){
-                    this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
-                }
+        while ((tcpPacket = this.controlBuffer.pop()) != null){
+
+            if (handlers.containsKey(tcpPacket.getType())){
+                handlers.get(tcpPacket.getType()).accept(tcpPacket);
             }
-        }
 
-        catch (Exception e){
-            e.printStackTrace();
+            else System.out.println("ServerFloodControlWorker unknown packet: " + tcpPacket);
         }
     }
 }

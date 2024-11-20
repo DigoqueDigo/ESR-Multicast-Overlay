@@ -23,12 +23,14 @@ public class NodeStreamWriterWorker implements Runnable{
 
             byte[] video_data;
             OutputStream outputStream = new FileOutputStream(this.fifo);
+            System.out.println("NodeStreamWriterWorker open fifo: " + this.fifo);
 
             while ((video_data = this.streamBuffer.pop()) != null && video_data.length > 0){
                 outputStream.write(video_data);
             }
 
             outputStream.close();
+            System.out.println("NodeStreamWriterWorker close fifo: " + this.fifo);
         }
 
         catch (Exception e){

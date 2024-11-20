@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
+import packet.tcp.TCPPacket.TCP_TYPE;
 import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
@@ -46,7 +48,7 @@ public class NodeFloodControlWorker implements Runnable{
     }
 
 
-    private void handleFloodPacket(TCPFloodControlPacket tcpFloodPacket){
+    private void handleControlFlood(TCPFloodControlPacket tcpFloodPacket){
 
         // inspeciono o pacote se nao tiver a minha assinatura
         if (tcpFloodPacket.getSignatures().contains(signature) == false){
@@ -85,24 +87,6 @@ public class NodeFloodControlWorker implements Runnable{
         System.out.println("GRANDPARENTS: " + this.grandParentsVideoProviders);
         System.out.println("BLACKLIST: " + this.blackList);
     }
-
-
-    private void handleGrandFatherPacket(TCPGrandfatherControlPacket tcpGrandfatherPacket){
-        if (tcpGrandfatherPacket.getProtocol() == GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY){
-            this.handleGrandFatherReply(tcpGrandfatherPacket);
-        }
-        else if (tcpGrandfatherPacket.getProtocol() == GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST){
-            this.handleGrandFatherRequest(tcpGrandfatherPacket);
-        }
-    }
-
-
-    private void handleConnectionStatePacket(TCPConnectionStatePacket tcpStatePacket){
-        if (tcpStatePacket.getProtocol() == CONNECTION_STATE_PROTOCOL.CONNECTION_LOST){
-            this.handleConnectionLost(tcpStatePacket);
-        }
-    }
-
 
     private void handleGrandFatherRequest(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
@@ -214,41 +198,40 @@ public class NodeFloodControlWorker implements Runnable{
 
     public void run(){
 
-        try{
+        TCPPacket tcpPacket;
+        Map<TCP_TYPE,Consumer<TCPPacket>> handlers = new HashMap<>();
+        Map<GRANDFATHER_PROTOCOL,Consumer<TCPGrandfatherControlPacket>> grandFatherHandlers = new HashMap<>();
+        Map<CONNECTION_STATE_PROTOCOL,Consumer<TCPConnectionStatePacket>> connectionStateHandlers = new HashMap<>();
 
-            TCPPacket tcpPacket;
+        grandFatherHandlers.put(GRANDFATHER_PROTOCOL.GRANDFATHER_REPLY, packet -> this.handleGrandFatherReply(packet));
+        grandFatherHandlers.put(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST, packet -> this.handleGrandFatherRequest(packet));
+        connectionStateHandlers.put(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST, packet -> this.handleConnectionLost(packet));
 
-            while ((tcpPacket = this.controlBuffer.pop()) != null){
+        handlers.put(TCP_TYPE.CONTROL_FLOOD, packet -> this.handleControlFlood((TCPFloodControlPacket)packet));
 
-                // sempre que recebo um pacote verifico se nenhum dos pais é zombie
-                this.videoProviders.deleteZombies();
+        handlers.put(TCP_TYPE.CONTROL_GRANDFATHER, packet -> {
+            TCPGrandfatherControlPacket grandfatherControlPacket = (TCPGrandfatherControlPacket) packet;
+            grandFatherHandlers.get(grandfatherControlPacket.getProtocol()).accept(grandfatherControlPacket);
+        });
 
-                switch (tcpPacket.getType()){
+        handlers.put(TCP_TYPE.CONTROL_CONNECTION_STATE, packet -> {
+            TCPConnectionStatePacket connectionStatePacket = (TCPConnectionStatePacket) packet;
+            connectionStateHandlers.get(connectionStatePacket.getProtocol()).accept(connectionStatePacket);
+        });
 
-                    case CONTROL_FLOOD:
-                        this.handleFloodPacket((TCPFloodControlPacket) tcpPacket);
-                        break;
+        while ((tcpPacket = this.controlBuffer.pop()) != null){
 
-                    case CONTROL_GRANDFATHER:
-                        this.handleGrandFatherPacket((TCPGrandfatherControlPacket) tcpPacket);
-                        break;
+            // sempre que recebo um pacote verifico se nenhum dos pais é zombie
+            this.videoProviders.deleteZombies();
 
-                    case CONTROL_CONNECTION_STATE:
-                        this.handleConnectionStatePacket((TCPConnectionStatePacket) tcpPacket);
-                        break;
-
-                    default:
-                        System.out.println("NodeFloodControlWorker unknown packet: " + tcpPacket);
-                        break;
-                }
-
-                // envia um pedido de grandfather caso seja necessario
-                this.requestGrandParends();
+            if (handlers.containsKey(tcpPacket.getType())){
+                handlers.get(tcpPacket.getType()).accept(tcpPacket);
             }
-        }
 
-        catch (Exception e){
-            e.printStackTrace();
+            else System.out.println("NodeFloodControlWorker unknown packet: " + tcpPacket);
+
+            // envia um pedido de grandfather caso seja necessario
+            this.requestGrandParends();
         }
     }
 }

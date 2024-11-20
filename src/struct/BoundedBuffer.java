@@ -83,23 +83,25 @@ public class BoundedBuffer<T> {
 	// remove()
 	// size()
 
-	public void push(T item) throws InterruptedException {
+	public void push(T item) {
 		try {
 			lock.lock();
-	
+
 			while (queue.isAtFullCapacity()) { // queue.isFull() nunca funciona, posso ou nao ter ignorado as docs
 				notFull.await();
 			}
-	
+
 			queue.add(item);
 	
 			notEmpty.signal();
-		} finally {
-			lock.unlock();
 		}
+
+		catch (Exception e) {e.printStackTrace();}
+
+		finally {lock.unlock();}
 	}
 
-	public T pop() throws InterruptedException {
+	public T pop() {
 		T item = null;
 		try {
 			lock.lock();
@@ -111,10 +113,15 @@ public class BoundedBuffer<T> {
 			item = queue.remove();
 
 			notFull.signal();
-		} finally {
-			lock.unlock();
+			return item;
 		}
-		return item; // ???????
+
+		catch (Exception e){
+			e.printStackTrace();
+			return null;
+		}
+
+		finally {lock.unlock();}
 	}
 
 	// allways returns imediately (if lock is not held obvs)

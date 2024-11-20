@@ -23,38 +23,31 @@ public class FloodEstablishConnection implements Runnable{
 
     public void run(){
 
-        try{
+        String neighbour;
+        System.out.println("FloodEstablishConnection service started");
 
-            String neighbour;
-            System.out.println("FloodEstablishConnection service started");
+        while ((neighbour = this.connectionBuffer.pop()) != null){
 
-            while ((neighbour = this.connectionBuffer.pop()) != null){
+            try{
 
-                try{
+                if (this.outBuffers.containsKey(neighbour) == false){
 
-                    if (this.outBuffers.containsKey(neighbour) == false){
+                    Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
+                    String myInterface = socket.getLocalAddress().getHostAddress();
+                    this.outBuffers.addBoundedBuffer(neighbour);
 
-                        Socket socket = new Socket(neighbour,WaitEstablishConnection.ESTABLISH_CONNECTION_PORT);
-                        String myInterface = socket.getLocalAddress().getHostAddress();
-                        this.outBuffers.addBoundedBuffer(neighbour);
+                    BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
+                    ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
 
-                        BoundedBuffer<TCPPacket> outBuffer = this.outBuffers.getBoundedBuffer(neighbour);
-                        ConnectionWorker connectionWorker = new ConnectionWorker(socket,inBuffer,outBuffer);
-
-                        new Thread(connectionWorker).start();
-                        System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
-                    }
-                }
-
-                catch (IOException e){
-                    this.outBuffers.removeBoundedBuffer(neighbour);
-                    System.out.println("FloodEstablishConnection service can not contact: " + neighbour);
+                    new Thread(connectionWorker).start();
+                    System.out.println("FloodEstablishConnection service concat: " + myInterface + " -> " + neighbour);
                 }
             }
-        }
 
-        catch (Exception e){
-            e.printStackTrace();
+            catch (IOException e){
+                this.outBuffers.removeBoundedBuffer(neighbour);
+                System.out.println("FloodEstablishConnection service can not contact: " + neighbour);
+            }
         }
     }
 }

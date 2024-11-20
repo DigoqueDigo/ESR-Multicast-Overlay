@@ -163,9 +163,15 @@ public class VideoProviders{
 
         try{
             this.lock.lock();
-            this.updates.entrySet().stream()
+
+            Set<String> zombies = this.updates.entrySet().stream()
                 .filter(x -> System.nanoTime() - x.getValue() > ZOMBIE)
-                .forEach(x -> this.removeProvider(x.getKey()));
+                .map(x -> x.getKey())
+                .collect(Collectors.toSet());
+
+            for (String zombie : zombies){
+                this.removeProvider(zombie);
+            }
         }
 
         catch (Exception e) {e.printStackTrace();}
@@ -183,7 +189,7 @@ public class VideoProviders{
             buffer.append("----- VIDEO PROVIDERS -----");
             buffer.append(this.providers.entrySet().stream()
                 .map(entry -> entry.getKey() + " :: " + entry.getValue())
-                .collect(Collectors.joining("\n")));
+                .collect(Collectors.joining("\n","\n","")));
 
             return buffer.toString();
         }

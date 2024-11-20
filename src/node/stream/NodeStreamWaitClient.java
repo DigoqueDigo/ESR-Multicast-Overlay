@@ -3,16 +3,18 @@ import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
 import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 import packet.udp.UDPPacket;
+import packet.udp.UDPPacket.UDP_TYPE;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL;
 import packet.udp.UDPVideoListPacket;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
 import struct.VideoProviders;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import carrier.UDPCarrier;
 
@@ -33,7 +35,7 @@ public class NodeStreamWaitClient implements Runnable{
     }
 
 
-    private void handleVideoControl(UDPVideoControlPacket videoControlPacket) throws InterruptedException{
+    private void handleVideoControl(UDPVideoControlPacket videoControlPacket){
 
         if (videoControlPacket.getProtocol() == EDGE_VIDEO_PROTOCOL.VIDEO_REQUEST){
             this.handleVideoControlRequest(videoControlPacket);
@@ -65,23 +67,30 @@ public class NodeStreamWaitClient implements Runnable{
     }
 
 
-    private void handleVideoList(UDPVideoListPacket videoListPacket) throws SocketException, IOException, ClassNotFoundException{
+    private void handleVideoList(UDPVideoListPacket videoListPacket){
 
-        String clientIP = videoListPacket.getSenderIP();
-        int clientPort = videoListPacket.getSenderPort();
+        try{
 
-        List<String> videos = this.videoProviders.getVideos().stream().collect(Collectors.toList());
-        UDPVideoListPacket response = new UDPVideoListPacket(videos);
+            String clientIP = videoListPacket.getSenderIP();
+            int clientPort = videoListPacket.getSenderPort();
 
-        UDPCarrier udpCarrier = new UDPCarrier();
-        InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
+            List<String> videos = this.videoProviders.getVideos().stream().collect(Collectors.toList());
+            UDPVideoListPacket response = new UDPVideoListPacket(videos);
 
-        System.out.println("StreamWaitClient send: " + response);
+            UDPCarrier udpCarrier = new UDPCarrier();
+            InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
 
-        udpCarrier.connect(socketAddress);
-        udpCarrier.send(response);
-        udpCarrier.disconnect();
-        udpCarrier.close();
+            System.out.println("StreamWaitClient send: " + response);
+
+            udpCarrier.connect(socketAddress);
+            udpCarrier.send(response);
+            udpCarrier.disconnect();
+            udpCarrier.close();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -90,8 +99,12 @@ public class NodeStreamWaitClient implements Runnable{
         try{
 
             UDPPacket udpPacket;
+            Map<UDP_TYPE,Consumer<UDPPacket>> handlers = new HashMap<>();
             InetSocketAddress socketAddress = new InetSocketAddress(CLIENT_ESTABLISH_CONNECTION_PORT);
             UDPCarrier udpCarrier = new UDPCarrier(socketAddress);
+
+            handlers.put(UDP_TYPE.VIDEO_CONTROL, packet -> this.handleVideoControl((UDPVideoControlPacket)packet));
+            handlers.put(UDP_TYPE.VIDEO_LIST, packet -> this.handleVideoList((UDPVideoListPacket)packet));
 
             System.out.println("StreamWaitClient service started");
 
@@ -101,19 +114,11 @@ public class NodeStreamWaitClient implements Runnable{
 
                     System.out.println("StreamWaitClient receive: " + udpPacket);
 
-                    switch (udpPacket.getType()) {
-
-                        case VIDEO_CONTROL:
-                            this.handleVideoControl((UDPVideoControlPacket) udpPacket);
-                            break;
-
-                        case VIDEO_LIST:                    
-                            this.handleVideoList((UDPVideoListPacket) udpPacket);
-                            break;
-
-                        default:
-                            break;
+                    if (handlers.containsKey(udpPacket.getType())){
+                        handlers.get(udpPacket.getType()).accept(udpPacket);
                     }
+
+                    else System.out.println("NodeStreamWaitClient unknown packet: " + udpPacket);
                 }
             }
         }

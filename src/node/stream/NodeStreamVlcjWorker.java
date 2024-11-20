@@ -32,10 +32,26 @@ public class NodeStreamVlcjWorker implements Runnable{
 
 
     private void handleVideoFinished(){
-        synchronized (this.lock){
-            this.mediaPlayer.release();
-            this.mediaPlayerFactory.release();
-            this.wasReleased = true;
+
+        synchronized (this.lock) {
+
+            try {
+                System.out.println("NodeStreamVlcjWorker trying to free up resources");    
+                this.mediaPlayer.release();
+                System.out.println("NodeStreamVlcjWorker MediaPlayer released");
+                this.mediaPlayerFactory.release();
+                System.out.println("NodeStreamVlcjWorker MediaPlayerFactory released");
+            }
+
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            finally {
+                this.wasReleased = true;
+                this.lock.notify();
+                System.out.println("NodeStreamVlcjWorker all resources have been released");
+            }
         }
     }
 
@@ -56,11 +72,27 @@ public class NodeStreamVlcjWorker implements Runnable{
             this.mediaPlayer.events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
 
                 public void playing(MediaPlayer mediaPlayer) {
-                    handleVideoPlaying();
+                    mediaPlayer.submit(new Runnable() {
+                        public void run(){
+                            handleVideoPlaying();
+                        }
+                    });
                 }
 
                 public void finished(MediaPlayer mediaPlayer) {
-                    handleVideoFinished();
+                    mediaPlayer.submit(new Runnable() {
+                        public void run(){
+                            handleVideoFinished();
+                        }
+                    });
+                }
+
+                public void error(MediaPlayer mediaPlayer) {
+                    mediaPlayer.submit(new Runnable() {
+                        public void run(){
+                            handleVideoFinished();
+                        }
+                    });
                 }
             });
 
