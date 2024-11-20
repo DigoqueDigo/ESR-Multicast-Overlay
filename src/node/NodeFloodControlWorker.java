@@ -169,11 +169,11 @@ public class NodeFloodControlWorker implements Runnable{
                     try {this.connectionBuffer.push(grandParent);}
                     catch (Exception e) {e.printStackTrace();}
                 }
-
-                // esquecer os avos deste video
-                this.grandParentsVideoProviders.get(video).clear();
-                this.blackList.get(video).clear();
             }
+
+            // o algoritmo funciona melhor se esquecer os avos
+            this.grandParentsVideoProviders.get(video).clear();
+            this.blackList.get(video).clear();
         }
     }
 
