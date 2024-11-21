@@ -33,12 +33,14 @@ public class NodeStreamVlcjWorker implements Runnable{
 
     private void handleVideoFinished(){
 
-        synchronized (this.lock) {
+        synchronized (this.lock){
 
-            try {
+            try{
                 System.out.println("NodeStreamVlcjWorker trying to free up resources");    
+
                 this.mediaPlayer.release();
                 System.out.println("NodeStreamVlcjWorker MediaPlayer released");
+
                 this.mediaPlayerFactory.release();
                 System.out.println("NodeStreamVlcjWorker MediaPlayerFactory released");
             }
@@ -47,7 +49,7 @@ public class NodeStreamVlcjWorker implements Runnable{
                 e.printStackTrace();
             }
 
-            finally {
+            finally{
                 this.wasReleased = true;
                 this.lock.notify();
                 System.out.println("NodeStreamVlcjWorker all resources have been released");

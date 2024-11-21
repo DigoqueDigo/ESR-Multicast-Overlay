@@ -25,12 +25,31 @@ public class ClientPlayer implements Runnable{
 
 
     private void handleWindowClosing(){
+
         synchronized (this.lock){
-            this.frame.setVisible(false);
-            this.mediaPlayerComponent.release(); 
-            this.frame.dispose();
-            this.wasReleased = true;
-            this.lock.notify();
+
+            try{
+                System.out.println("ClientPlayer trying to free up resources");  
+
+                this.frame.setVisible(false);
+                System.out.println("ClientPlayer hide frame");
+
+                this.mediaPlayerComponent.release(); 
+                System.out.println("ClientPlayer EmbeddedMediaPlayerComponent released");
+
+                this.frame.dispose();
+                System.out.println("ClientPlayer frame released");
+            }
+
+            catch (Exception e){
+                e.printStackTrace();
+            }
+
+            finally {
+                this.wasReleased = true;
+                this.lock.notify();
+                System.out.println("ClientPlayer all resources have been released");
+            }
         }
     }
 
@@ -63,11 +82,19 @@ public class ClientPlayer implements Runnable{
             this.mediaPlayerComponent.mediaPlayer().events().addMediaPlayerEventListener(new MediaPlayerEventAdapter(){
 
                 public void playing(MediaPlayer mediaPlayer) {
-                    handleVideoPlaying();
+                    mediaPlayer.submit(new Runnable() {
+                        public void run(){
+                            handleVideoPlaying();
+                        }
+                    });
                 }
 
                 public void error(MediaPlayer mediaPlayer) {
-                    handleVideoError();
+                    mediaPlayer.submit(new Runnable() {
+                        public void run(){
+                            handleVideoError();
+                        }
+                    });
                 }
             });
 

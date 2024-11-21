@@ -34,7 +34,10 @@ public class VideoConsumers{
 
 
     public Set<String> getConsumers(String video){
-        return this.consumers.get(video);
+        Set<String> consumers = new HashSet<>();
+        if (this.consumers.containsKey(video))
+            consumers = this.consumers.get(video);
+        return consumers;
     }
 
 
