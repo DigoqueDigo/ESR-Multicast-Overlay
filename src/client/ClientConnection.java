@@ -1,7 +1,10 @@
 package client;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import carrier.UDPCarrier;
 import node.stream.NodeStreamWaitClient;
+import node.stream.NodeStreamWorker;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL;
 
@@ -36,9 +39,29 @@ public class ClientConnection{
             udpCarrier.send(videoRequest);
             udpCarrier.disconnect();
 
-            Thread clientPlayer = new Thread(new ClientPlayer(this.video));
-            clientPlayer.start();
-            clientPlayer.join();
+            String link = "udp://{ADDRESS}:{PORT}";
+            link = link.replace("{ADDRESS}","0.0.0.0");
+            link = link.replace("{PORT}",Integer.toString(NodeStreamWorker.STREAMING_PORT));
+
+            ProcessBuilder ffplayProcessBuilder = new ProcessBuilder(
+                "ffplay",
+                "-vf",
+                "scale=640:-1",
+                link
+            );
+
+            Process ffplay = ffplayProcessBuilder.start();
+            System.out.println("ClientConnection ffplay started: " + link);
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(ffplay.getErrorStream()))){
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+
+            int ffplayExitCode = ffplay.waitFor();
+            System.out.println("ClientConnection ffplay exit code: " + ffplayExitCode);
 
             System.out.println("ClientConnection send packet: " + videoCancel);
 

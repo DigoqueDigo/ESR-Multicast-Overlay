@@ -1,5 +1,5 @@
 package server;
-import java.io.FileInputStream;
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -33,21 +33,41 @@ public class ServerVideoCatcher implements Runnable{
 
             int bytes_read;
             byte[] data_read = new byte[CHUNK_SIZE];
+            String videoPath = this.videoFolder + this.video;
 
-            String path = this.videoFolder + this.video;
-            InputStream inputStream = new FileInputStream(path);
+            ProcessBuilder ffmpegProcessBuilder = new ProcessBuilder(
+                "ffmpeg",
+                "-re",
+                "-stream_loop", "-1",
+                "-i", videoPath,
+                "-c:v", "mpeg4",
+                "-c:a", "aac",
+                "-g", "30",
+                "-preset", "ultrafast",
+                "-f", "mpegts",
+                "-"
+            );
 
-            while ((bytes_read = inputStream.read(data_read)) > 0 && this.consumers.size() > 0){
+            Process ffmpeg = ffmpegProcessBuilder.start();
+            InputStream inputStream = new BufferedInputStream(ffmpeg.getInputStream());
+            System.out.println("ServerVideoCatch ffmpeg started: " + this.video);
 
-                byte[] data = Arrays.copyOf(data_read,bytes_read);
-                TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY,this.video,data);
+            while ((bytes_read = inputStream.read(data_read)) > 0){
 
-                for (String consumer : this.consumers){
-                    this.outBuffers.put(consumer,videoControlPacket);
+                if (this.consumers.size() > 0){
+
+                    byte[] data = Arrays.copyOf(data_read,bytes_read);
+                    TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY,this.video,data);
+
+                    for (String consumer : this.consumers){
+                        this.outBuffers.put(consumer,videoControlPacket);
+                    }
                 }
             }
 
             inputStream.close();
+            int exitCode = ffmpeg.waitFor();
+            System.out.println("ServerVideoCatch ffmpeg exit code: " + exitCode + " :: " + this.video);
         }
 
         catch (Exception e){

@@ -1,12 +1,14 @@
 package node.stream;
-import java.io.IOException;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import struct.BoundedBuffer;
-import utils.IO;
 
 
 public class NodeStreamWorker implements Runnable{
 
-    private String clientIP;
+    public static final int STREAMING_PORT = 7000;
+
+    private final String clientIP;
     private BoundedBuffer<byte[]> streamBuffer;
 
 
@@ -20,32 +22,32 @@ public class NodeStreamWorker implements Runnable{
 
         try{
 
-            String fifoName = this.clientIP;
+            String link = "udp://{ADDRESS}:{PORT}";
+            link = link.replace("{ADDRESS}",this.clientIP);
+            link = link.replace("{PORT}",Integer.toString(STREAMING_PORT));
 
-            if (IO.mkfifo(fifoName) != 0){
-                throw new IOException("StreamWorker can not create fifo: " + fifoName);
+            ProcessBuilder ffmpegProcessBuilder = new ProcessBuilder(
+                "ffmpeg",
+                "-re",
+                "-i", "-",
+                "-f", "mpegts", link
+            );
+
+            Process ffmpeg = ffmpegProcessBuilder.start();
+            OutputStream outputStream = new BufferedOutputStream(ffmpeg.getOutputStream());
+            byte[] video_data;
+
+            while ((video_data = this.streamBuffer.pop()) != null && video_data.length > 0){
+                outputStream.write(video_data);
             }
 
-            else System.out.println("StreamWorker create fifo: " + fifoName);
+            outputStream.flush();
+            outputStream.close();
+            System.out.println("SAUI DO CICLO");
 
-            Thread writer = new Thread(new NodeStreamWriterWorker(this.streamBuffer,fifoName));
-            Thread reader = new Thread(new NodeStreamVlcjWorker(this.clientIP,fifoName));
-
-            reader.start();
-
-            // isto nao garante nada, mas o vlc tem de ser o primeiro a abrir
-            Thread.sleep(1000);
-
-            writer.start();
-
-            reader.join();
-            writer.join();
-
-            if (IO.rm(fifoName) != 0){
-                throw new IOException("Can not remove fifo: " + fifoName);
-            }
-
-            else System.out.println("StreamWorker remove fifo: " + fifoName);
+            int ffmpegExitCode = ffmpeg.waitFor();
+            System.out.println("NodeStreamWorker ffmpeg exit code: " + ffmpegExitCode);
+            System.out.println("NodeStreamWorker stream finished");
         }
 
         catch (Exception e){
