@@ -15,17 +15,17 @@ import struct.MapBoundedBuffer;
 
 public class ServerVideoControlWorker implements Runnable{
 
-    private String videoFolder;
-    private Map<String,CopyOnWriteArrayList<String>> videoCatchers;
+    private final String videoFolder;
     private BoundedBuffer<TCPPacket> videoBuffer;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
+    private Map<String,CopyOnWriteArrayList<String>> videoCatchers;
 
 
     public ServerVideoControlWorker(String videoFolfer, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.videoFolder = videoFolfer;
-        this.videoCatchers = new HashMap<>();
         this.videoBuffer = videoBuffer;
         this.outBuffers = outBuffers;
+        this.videoCatchers = new HashMap<>();
     }
 
 
@@ -52,13 +52,8 @@ public class ServerVideoControlWorker implements Runnable{
         String video = videoControlPacket.getVideo();
 
         if (this.videoCatchers.containsKey(video)){
-
             CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
             consumers.remove(consumer);
-
-            if (consumers.size() == 0){
-                this.videoCatchers.remove(video);
-            }
         }
     }
 
@@ -68,13 +63,8 @@ public class ServerVideoControlWorker implements Runnable{
         String consumer = connectionStatePacket.getSenderIP();
 
         for (String video : this.videoCatchers.keySet()){
-
             CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
             consumers.remove(consumer);
-
-            if (consumers.size() == 0){
-                this.videoCatchers.remove(video);
-            }
         }
     }
 

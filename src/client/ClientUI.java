@@ -11,6 +11,7 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import node.stream.NodeStreamWaitClient;
+import node.stream.NodeStreamWorker;
 
 
 public class ClientUI{
@@ -30,7 +31,7 @@ public class ClientUI{
     }
 
 
-    private String select_option(String prompt, String warning, List<String> options) throws EndOfFileException{
+    private String select_option(String prompt, List<String> options) throws EndOfFileException{
 
         String userChoice = null;
         StringsCompleter stringsCompleter = new StringsCompleter(options);
@@ -46,7 +47,6 @@ public class ClientUI{
 
             if (options.contains(userChoice) == false){
                 userChoice = null;
-                System.out.println(warning);
             }
         }
 
@@ -56,14 +56,11 @@ public class ClientUI{
 
     public void start(){
 
-        String video_prompt = new AttributedString("Select one video >> ",
+        String video_prompt = new AttributedString("Select Video >> ",
             AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.WHITE)).toAnsi();
 
-        String edge_prompt = new AttributedString("Select one EdgeNode >> ",
+        String edge_prompt = new AttributedString("Select EdgeNode >> ",
             AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.WHITE)).toAnsi();
-
-        String warning = new AttributedString("Invalid option selected!",
-            AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.RED)).toAnsi();
 
         String bye = new AttributedString("Bye!",
             AttributedStyle.DEFAULT.bold().foreground(AttributedStyle.WHITE)).toAnsi();
@@ -77,15 +74,21 @@ public class ClientUI{
 
                 while (videoList == null){
 
-                    selectedEdgeNode = this.select_option(edge_prompt,warning,this.edgeNodes);
+                    selectedEdgeNode = this.select_option(edge_prompt,this.edgeNodes);
                     ClientVideoGather clientVideoGrather = new ClientVideoGather(
                         selectedEdgeNode,NodeStreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT);
 
                     videoList = clientVideoGrather.getVideoList();
                 }
 
-                String selectedVideo = this.select_option(video_prompt, warning, videoList);
-                ClientConnection clientConnection = new ClientConnection(selectedEdgeNode,selectedVideo);
+                String selectedVideo = this.select_option(video_prompt,videoList);
+                ClientConnection clientConnection = new ClientConnection(
+                    selectedVideo,
+                    selectedEdgeNode,
+                    NodeStreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT,
+                    NodeStreamWorker.STREAMING_PORT
+                );
+
                 clientConnection.start();
             }
         }

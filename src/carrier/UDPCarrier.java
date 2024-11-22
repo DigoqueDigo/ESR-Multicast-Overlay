@@ -23,7 +23,7 @@ import java.io.IOException;
 public class UDPCarrier{
 
     private static final int BUFFER_SIZE = 4096;
-    private static final int SEND_TIMEOUT = 50;
+    private static final int SEND_TIMEOUT = 20;
     private static final int RECEIVE_TIMEOUT = 500;
     private static Map<Class<?>,Function<byte[],UDPPacket>> deserializeMap = new HashMap<>();
 
@@ -132,8 +132,7 @@ public class UDPCarrier{
                 }
             }
 
-            catch (SocketTimeoutException e){
-            }
+            catch (SocketTimeoutException e) {}
         }
     }
 

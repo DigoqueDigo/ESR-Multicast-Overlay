@@ -1,5 +1,6 @@
 package client;
 import java.net.InetSocketAddress;
+import java.net.PortUnreachableException;
 import java.util.List;
 import carrier.UDPCarrier;
 import packet.udp.UDPPacket;
@@ -41,6 +42,11 @@ public class ClientVideoGather{
 
             udpCarrier.close();
             return videoListPacket.getVideos();
+        }
+
+        catch (PortUnreachableException e){
+            System.out.println("Can not contact: " + this.edgeNodeIP + ":" + this.edgeNodePort);
+            return null;
         }
 
         catch (Exception e){

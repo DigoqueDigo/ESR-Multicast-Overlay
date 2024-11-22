@@ -13,8 +13,8 @@ public class ServerVideoCatcher implements Runnable{
 
     private static final int CHUNK_SIZE = 32_768;
 
-    private String video;
-    private String videoFolder;
+    private final String video;
+    private final String videoFolder;
     private CopyOnWriteArrayList<String> consumers;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 

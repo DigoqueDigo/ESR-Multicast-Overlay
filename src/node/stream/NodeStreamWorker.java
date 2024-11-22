@@ -30,7 +30,8 @@ public class NodeStreamWorker implements Runnable{
                 "ffmpeg",
                 "-re",
                 "-i", "-",
-                "-f", "mpegts", link
+                "-f", "mpegts",
+                link
             );
 
             Process ffmpeg = ffmpegProcessBuilder.start();
@@ -43,7 +44,6 @@ public class NodeStreamWorker implements Runnable{
 
             outputStream.flush();
             outputStream.close();
-            System.out.println("SAUI DO CICLO");
 
             int ffmpegExitCode = ffmpeg.waitFor();
             System.out.println("NodeStreamWorker ffmpeg exit code: " + ffmpegExitCode);
