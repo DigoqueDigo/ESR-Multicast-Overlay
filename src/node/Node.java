@@ -9,10 +9,13 @@ import service.establishconnection.WaitEstablishConnection;
 import service.gather.BootstrapperGather;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
+import struct.VideoCurrentProviders;
 import struct.VideoProviders;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 
 
@@ -41,6 +44,10 @@ public class Node {
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
 
         VideoProviders videoProviders = new VideoProviders();
+        VideoCurrentProviders videoCurrentProviders = new VideoCurrentProviders(); 
+
+        TimerTask nodeZombieTimer  = new NodeZombieTimer(videoProviders);
+        TimerTask nodeSwitchTimer = new NodeSwitchTimer(videoProviders,videoCurrentProviders,outBuffers);
 
         Set<Thread> workers = new HashSet<>();
 
@@ -49,7 +56,10 @@ public class Node {
 
         workers.add(new Thread(new CoreWorker(inBuffer,controlBuffer,videoBuffer)));
         workers.add(new Thread(new NodeFloodControlWorker(nodeName,videoProviders,controlBuffer,connectionBuffer,outBuffers)));
-        workers.add(new Thread(new NodeVideoControlWorker(videoProviders,videoBuffer,streamBuffers,outBuffers)));
+        workers.add(new Thread(new NodeVideoControlWorker(videoProviders,videoCurrentProviders,videoBuffer,streamBuffers,outBuffers)));
+
+        new Timer().schedule(nodeSwitchTimer,NodeSwitchTimer.DELAY,NodeSwitchTimer.PERIOD);
+        new Timer().schedule(nodeZombieTimer,NodeZombieTimer.DELAY,NodeZombieTimer.PERIOD);
 
         if (isEdge){
             workers.add(new Thread(new NodeStreamWaitClient(videoProviders,inBuffer,streamBuffers)));

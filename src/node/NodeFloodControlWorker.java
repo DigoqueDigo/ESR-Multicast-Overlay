@@ -221,9 +221,6 @@ public class NodeFloodControlWorker implements Runnable{
 
         while ((tcpPacket = this.controlBuffer.pop()) != null){
 
-            // sempre que recebo um pacote verifico se nenhum dos pais é zombie
-            this.videoProviders.deleteZombies();
-
             if (handlers.containsKey(tcpPacket.getType())){
                 handlers.get(tcpPacket.getType()).accept(tcpPacket);
             }

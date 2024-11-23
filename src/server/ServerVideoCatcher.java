@@ -11,7 +11,8 @@ import struct.MapBoundedBuffer;
 
 public class ServerVideoCatcher implements Runnable{
 
-    private static final int CHUNK_SIZE = 32_768;
+    private static final int CHUNK_MAX_SIZE = 32_768;
+    private static final int CHUNK_MIN_SIZE = 16_384;
 
     private final String video;
     private final String videoFolder;
@@ -32,7 +33,10 @@ public class ServerVideoCatcher implements Runnable{
         try{
 
             int bytes_read;
-            byte[] data_read = new byte[CHUNK_SIZE];
+            int offset = 0;
+            int length = CHUNK_MAX_SIZE;
+
+            byte[] data_read = new byte[CHUNK_MAX_SIZE];
             String videoPath = this.videoFolder + this.video;
 
             ProcessBuilder ffmpegProcessBuilder = new ProcessBuilder(
@@ -52,16 +56,22 @@ public class ServerVideoCatcher implements Runnable{
             InputStream inputStream = new BufferedInputStream(ffmpeg.getInputStream());
             System.out.println("ServerVideoCatch ffmpeg started: " + this.video);
 
-            while ((bytes_read = inputStream.read(data_read)) > 0){
+            while ((bytes_read = inputStream.read(data_read,offset,length)) > -1){
 
-                if (this.consumers.size() > 0){
+                offset += bytes_read;
+                length -= bytes_read;
 
-                    byte[] data = Arrays.copyOf(data_read,bytes_read);
+                if ((this.consumers.size() > 0 && offset > CHUNK_MIN_SIZE) || length == 0){
+
+                    byte[] data = Arrays.copyOf(data_read,offset);
                     TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_REPLY,this.video,data);
 
                     for (String consumer : this.consumers){
                         this.outBuffers.put(consumer,videoControlPacket);
                     }
+
+                    offset = 0;
+                    length = CHUNK_MAX_SIZE;
                 }
             }
 

@@ -28,15 +28,17 @@ public class VideoConsumers{
 
     public void remove(String video, String node){
         this.consumers.get(video).remove(node);
-        if (this.consumers.get(video).size() == 0)
+        if (this.consumers.get(video).size() == 0){
             this.consumers.remove(video);
+        }
     }
 
 
     public Set<String> getConsumers(String video){
         Set<String> consumers = new HashSet<>();
-        if (this.consumers.containsKey(video))
+        if (this.consumers.containsKey(video)){
             consumers = this.consumers.get(video);
+        }
         return consumers;
     }
 

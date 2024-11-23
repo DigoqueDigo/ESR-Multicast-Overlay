@@ -12,6 +12,7 @@ import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
 import struct.VideoConsumers;
+import struct.VideoCurrentProviders;
 import struct.VideoProviders;
 
 
@@ -19,14 +20,17 @@ public class NodeVideoControlWorker implements Runnable{
 
     private VideoProviders videoProviders;
     private VideoConsumers videoConsumers;
+    private VideoCurrentProviders videoCurrentProviders;
+
     private BoundedBuffer<TCPPacket> videoBuffer;
     private MapBoundedBuffer<String,byte[]> streamBuffers;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public NodeVideoControlWorker(VideoProviders videoProviders, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public NodeVideoControlWorker(VideoProviders videoProviders, VideoCurrentProviders videoCurrentProviders, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.videoProviders = videoProviders;
         this.videoConsumers = new VideoConsumers();
+        this.videoCurrentProviders = videoCurrentProviders;
         this.videoBuffer = videoBuffer;
         this.streamBuffers = streaBuffers;
         this.outBuffers = outBuffers;
@@ -47,6 +51,7 @@ public class NodeVideoControlWorker implements Runnable{
         if (firstRequest){
             String bestProvider = this.videoProviders.getBestProvider(video);
             this.outBuffers.put(bestProvider,videoControlPacket);
+            this.videoCurrentProviders.put(video,bestProvider);
         }
     }
 
@@ -61,8 +66,13 @@ public class NodeVideoControlWorker implements Runnable{
 
         // se deixou de haver consumers do video, encaminhar o cancel para o provider
         if (this.videoConsumers.containsKey(video) == false){
-            String provider = this.videoProviders.getBestProvider(video);
-            this.outBuffers.put(provider,videoControlPacket);
+
+            String currentProvider = this.videoCurrentProviders.get(video);
+
+            if (currentProvider != null){
+                this.outBuffers.put(currentProvider,videoControlPacket);
+                this.videoCurrentProviders.remove(video);
+            }
         }
 
         // se e um cliente, entao nao esta nos outbuffers
@@ -96,6 +106,7 @@ public class NodeVideoControlWorker implements Runnable{
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
 
         String consumer = connectionStatePacket.getSenderIP();
+    //    String provider = connectionStatePacket.getSenderIP();
 
         for (String video : this.videoConsumers.getVideos()){
 
@@ -105,8 +116,9 @@ public class NodeVideoControlWorker implements Runnable{
             // informar o provider que pode cancelar a transmissao
             if (this.videoConsumers.containsKey(video) == false){
                 TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL,video);
-                String provider = this.videoProviders.getBestProvider(video);
-                this.outBuffers.put(provider,videoControlPacket);
+                String currentProvider = this.videoCurrentProviders.get(video);
+                this.outBuffers.put(currentProvider,videoControlPacket);
+                this.videoCurrentProviders.remove(currentProvider);
             }
 
             if (this.outBuffers.containsKey(consumer) == false){
@@ -114,6 +126,8 @@ public class NodeVideoControlWorker implements Runnable{
                 this.streamBuffers.removeBoundedBuffer(consumer);
             }
         }
+
+        // o que fazer quando o vizinho e um provider
     }
 
 

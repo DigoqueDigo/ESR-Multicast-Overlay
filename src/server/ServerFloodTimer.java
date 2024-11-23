@@ -10,7 +10,7 @@ import utils.IO;
 public class ServerFloodTimer extends TimerTask{
 
     public static final int DELAY = 1_000;
-    public static final int PERIOD = 10_000_000;
+    public static final int PERIOD = 10_000;
 
     private final String serverName;
     private final String signature;
@@ -28,7 +28,7 @@ public class ServerFloodTimer extends TimerTask{
 
     public void run(){
 
-        System.out.println("ControlFloodTimer repeat execution");
+        System.out.println("ServerFloodTimer repeat execution");
 
         List<String> videos = IO.listFiles(this.videoFolder);
         TCPFloodControlPacket tcpFloodPacket = new TCPFloodControlPacket(this.serverName,videos);
@@ -36,7 +36,7 @@ public class ServerFloodTimer extends TimerTask{
 
         for (String neighbour : this.outBuffers.getKeys()){
             this.outBuffers.put(neighbour,tcpFloodPacket);
-            System.out.println("ControlFloodTimer send: " + this.signature + " -> " + neighbour);
+            System.out.println("ServerFloodTimer send: " + this.signature + " -> " + neighbour);
         }
     }
 }

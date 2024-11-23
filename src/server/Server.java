@@ -37,8 +37,7 @@ public class Server {
 
         MapBoundedBuffer<String,TCPPacket> outBuffers = new MapBoundedBuffer<>();
 
-        Timer timer = new Timer();
-        TimerTask controlFlood = new ServerFloodTimer(serverName,videoFolder,outBuffers);
+        TimerTask serverFloodTimer = new ServerFloodTimer(serverName,videoFolder,outBuffers);
 
         Set<Thread> workers = new HashSet<>();
 
@@ -49,7 +48,7 @@ public class Server {
         workers.add(new Thread(new ServerFloodControlWorker(controlBuffer,outBuffers)));
         workers.add(new Thread(new ServerVideoControlWorker(videoFolder,videoBuffer,outBuffers)));
 
-        timer.schedule(controlFlood,ServerFloodTimer.DELAY,ServerFloodTimer.PERIOD);
+        new Timer().schedule(serverFloodTimer,ServerFloodTimer.DELAY,ServerFloodTimer.PERIOD);
 
         for (Thread worker : workers){
             worker.start();
