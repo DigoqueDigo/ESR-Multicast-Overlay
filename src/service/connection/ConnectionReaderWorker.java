@@ -1,5 +1,4 @@
 package service.connection;
-import java.io.IOException;
 import java.io.InputStream;
 import carrier.TCPCarrier;
 import packet.tcp.TCPConnectionStatePacket;
@@ -37,31 +36,19 @@ public class ConnectionReaderWorker implements Runnable{
                 this.inBuffer.push(receivePacket);
                 System.out.println("ConnectionReaderWorker after push");
             }
-
-            throw new IOException("FOI TUDO PELO CARALHO");
-        }
-
-        catch (IOException e){
-            e.printStackTrace();
         }
 
         catch (Exception e){
+
+            e.printStackTrace();
 
             // informar que a conexão perdeu-se
             TCPConnectionStatePacket tcpStatePacket = new TCPConnectionStatePacket(CONNECTION_STATE_PROTOCOL.CONNECTION_LOST);
             tcpStatePacket.setReceiverIP(this.myInterface);
             tcpStatePacket.setSenderIP(this.neighbourInterface);
 
-            e.printStackTrace();
-
-            try {
-                this.inBuffer.push(tcpStatePacket);
-                System.out.println("ConnectionReaderWorker lost connection: " + this.myInterface + " -> " + this.neighbourInterface);
-            }
-
-            catch (Exception f){
-                f.printStackTrace();
-            }
+            this.inBuffer.push(tcpStatePacket);
+            System.out.println("ConnectionReaderWorker lost connection: " + this.myInterface + " -> " + this.neighbourInterface);
         }
     }
 }
