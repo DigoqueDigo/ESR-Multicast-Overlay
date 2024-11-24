@@ -51,6 +51,7 @@ public class NodeStreamWaitClient implements Runnable{
         tcpVideoControlPacket.setSenderIP(udpVideoControlPacket.getSenderIP());
         tcpVideoControlPacket.setSenderPort(udpVideoControlPacket.getSenderPort());
 
+        System.out.println("NodeStreamWaitClient push :" + tcpVideoControlPacket);
         this.inBuffer.push(tcpVideoControlPacket);
     }
 
@@ -74,13 +75,13 @@ public class NodeStreamWaitClient implements Runnable{
             String clientIP = videoListPacket.getSenderIP();
             int clientPort = videoListPacket.getSenderPort();
 
-            List<String> videos = this.videoProviders.getVideos().stream().collect(Collectors.toList());
+            List<String> videos = this.videoProviders.getAvailableVideos().stream().collect(Collectors.toList());
             UDPVideoListPacket response = new UDPVideoListPacket(videos);
 
             UDPCarrier udpCarrier = new UDPCarrier();
             InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
 
-            System.out.println("StreamWaitClient send: " + response);
+            System.out.println("NodeStreamWaitClient send: " + response);
 
             udpCarrier.connect(socketAddress);
             udpCarrier.send(response);
@@ -106,13 +107,13 @@ public class NodeStreamWaitClient implements Runnable{
             handlers.put(UDP_TYPE.VIDEO_CONTROL, packet -> this.handleVideoControl((UDPVideoControlPacket)packet));
             handlers.put(UDP_TYPE.VIDEO_LIST, packet -> this.handleVideoList((UDPVideoListPacket)packet));
 
-            System.out.println("StreamWaitClient service started");
+            System.out.println("NodeStreamWaitClient service started");
 
             while (udpCarrier.isClosed() == false){
 
                 if ((udpPacket = udpCarrier.receive()) != null){
 
-                    System.out.println("StreamWaitClient receive: " + udpPacket);
+                    System.out.println("NodeStreamWaitClient receive: " + udpPacket);
 
                     if (handlers.containsKey(udpPacket.getType())){
                         handlers.get(udpPacket.getType()).accept(udpPacket);

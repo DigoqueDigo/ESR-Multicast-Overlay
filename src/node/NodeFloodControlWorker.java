@@ -57,7 +57,7 @@ public class NodeFloodControlWorker implements Runnable{
             List<String> videos = tcpFloodPacket.getVideos();
 
             Long serverTimeStamp = tcpFloodPacket.getTimestamp();
-            long delay = System.nanoTime() - serverTimeStamp;
+            long delay = System.currentTimeMillis() - serverTimeStamp;
 
             // adiciono o nodo como provider se for o primeiro pacote que recebo dele
             String identifier = sender + serverTimeStamp.toString();

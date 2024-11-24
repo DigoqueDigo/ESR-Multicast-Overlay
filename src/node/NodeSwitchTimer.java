@@ -11,8 +11,9 @@ import struct.VideoProviders;
 
 public class NodeSwitchTimer extends TimerTask{
 
-    public static final int DELAY = 2_000;
-    public static final int PERIOD = 10_000;
+    public static final Long DELAY = 2_000L;
+    public static final Long PERIOD = 10_000L;
+    private static final Long TOLERANCE = 500L;
 
     private VideoProviders videoProviders;
     private VideoCurrentProviders videoCurrentProviders;
@@ -40,16 +41,26 @@ public class NodeSwitchTimer extends TimerTask{
                 String bestProvider = this.videoProviders.getBestProvider(video);
                 String currentProvider = this.videoCurrentProviders.get(video);
 
-                if (bestProvider != null && !currentProvider.equals(bestProvider)){
+                Long bestProviderTime = this.videoProviders.getProviderTime(video,bestProvider);
+                Long currentProviderTime = this.videoProviders.getProviderTime(video,currentProvider);
 
-                    TCPVideoControlPacket videoCancelPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL,video);
-                    TCPVideoControlPacket videoRequestPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_REQUEST,video);
+                if (bestProviderTime != null){
 
-                    this.outBuffers.put(currentProvider,videoCancelPacket);
-                    this.outBuffers.put(bestProvider,videoRequestPacket);
-                    this.videoCurrentProviders.put(video,bestProvider);
+                    if (currentProviderTime == null || currentProviderTime - bestProviderTime > TOLERANCE){
 
-                    System.out.println("NodeSwitchTimer replace: " + currentProvider + " -> " + bestProvider);
+                        TCPVideoControlPacket videoCancelPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL,video);
+                        TCPVideoControlPacket videoRequestPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_REQUEST,video);
+
+                        this.outBuffers.put(currentProvider,videoCancelPacket);
+                        this.outBuffers.put(bestProvider,videoRequestPacket);
+                        this.videoCurrentProviders.put(video,bestProvider);
+
+                        System.out.println("NodeSwitchTime currentProviderTime: " + currentProviderTime);
+                        System.out.println("NodeSwitchTime bestProviderTime: " + bestProviderTime);
+                        System.out.println("NodeSwitchTimer replace: " + currentProvider + " -> " + bestProvider);
+                        System.out.println(this.videoProviders);
+                        System.out.println(this.videoCurrentProviders);
+                    }
                 }
             }
 

@@ -31,6 +31,8 @@ public class ServerVideoControlWorker implements Runnable{
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
 
+        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
+
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
         boolean startCatcher = !this.videoCatchers.containsKey(video);
@@ -48,6 +50,8 @@ public class ServerVideoControlWorker implements Runnable{
 
     private void handleControlVideoCancel(TCPVideoControlPacket videoControlPacket){
 
+        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
+
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
 
@@ -59,6 +63,8 @@ public class ServerVideoControlWorker implements Runnable{
 
 
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
+
+        System.out.println("ServerVideoControlWorker: " + connectionStatePacket);
 
         String consumer = connectionStatePacket.getSenderIP();
 

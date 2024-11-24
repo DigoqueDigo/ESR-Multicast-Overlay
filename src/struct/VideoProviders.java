@@ -13,11 +13,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class VideoProviders{
 
-    private static final double NEW_TIMESTAMP_WEIGHT = 0.25;
-    private static final double CURRENT_RATING_WEIGHT = 0.75;
-
-    // o fornecedor é dado como morto se não for atualizado em 18 segundos
-    private static final Long ZOMBIE =  18_000_000_000L;
+    private static final double NEW_TIMESTAMP_WEIGHT = 0.2;
+    private static final double CURRENT_RATING_WEIGHT = 0.8;
+    private static final Long ZOMBIE =  18_000L;
 
     /* providers
      * videoA -> [(O1,165),(O5,162)]
@@ -51,7 +49,7 @@ public class VideoProviders{
 
             this.providers.get(video).removeIf(x -> x.getLeft().equals(provider));
             this.providers.get(video).add(entry);
-            this.updates.put(provider,System.nanoTime());
+            this.updates.put(provider,System.currentTimeMillis());
         }
 
         catch (Exception e) {e.printStackTrace();}
@@ -101,7 +99,26 @@ public class VideoProviders{
 
         catch (Exception e){
             e.printStackTrace();
-            return null;
+            return new HashSet<>();
+        }
+
+        finally {this.lock.unlock();}
+    }
+
+
+    public Set<String> getAvailableVideos(){
+
+        try{
+            this.lock.lock();
+            return this.providers.entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 0)
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toSet());
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return new HashSet<>();
         }
 
         finally {this.lock.unlock();}
@@ -159,13 +176,39 @@ public class VideoProviders{
     }
 
 
+    public Long getProviderTime(String video, String provider){
+
+        try{
+
+            this.lock.lock();
+            Long time = null;
+
+            for (Pair<String,Long> entry : this.providers.get(video)){
+                if (entry.getLeft().equals(provider)){
+                    time = entry.getRight();
+                    break;
+                }
+            }
+
+            return time;
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+
+        finally {this.lock.unlock();}
+    }
+
+
     public void deleteZombies(){
 
         try{
             this.lock.lock();
 
             Set<String> zombies = this.updates.entrySet().stream()
-                .filter(x -> System.nanoTime() - x.getValue() > ZOMBIE)
+                .filter(x -> System.currentTimeMillis() - x.getValue() > ZOMBIE)
                 .map(x -> x.getKey())
                 .collect(Collectors.toSet());
 

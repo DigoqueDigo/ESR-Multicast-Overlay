@@ -9,8 +9,8 @@ import utils.IO;
 
 public class ServerFloodTimer extends TimerTask{
 
-    public static final int DELAY = 1_000;
-    public static final int PERIOD = 10_000;
+    public static final Long DELAY = 1_000L;
+    public static final Long PERIOD = 10_000L;
 
     private final String serverName;
     private final String signature;

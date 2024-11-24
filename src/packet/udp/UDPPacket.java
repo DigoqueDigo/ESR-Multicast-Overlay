@@ -17,14 +17,14 @@ public abstract class UDPPacket extends Packet{
     public UDPPacket(UDP_TYPE type){
         super();
         this.type = type;
-        this.id = System.nanoTime();
+        this.id = System.currentTimeMillis();
     }
 
 
     public UDPPacket(UDP_TYPE type, String receiverIP, int receiverPort, String senderIP, int senderPort){
         super(receiverIP,receiverPort,senderIP,senderPort);
         this.type = type;
-        this.id = System.nanoTime();
+        this.id = System.currentTimeMillis();
     }
 
 

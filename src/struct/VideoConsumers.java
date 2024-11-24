@@ -3,6 +3,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class VideoConsumers{
@@ -50,5 +51,15 @@ public class VideoConsumers{
 
     public boolean containsKey(String video){
         return this.consumers.containsKey(video);
+    }
+
+
+    public String toString(){
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("----- VIDEO CONSUMERS -----");
+        buffer.append(this.consumers.entrySet().stream()
+            .map(x -> x.getKey() + " :: " + x.getValue())
+            .collect(Collectors.joining("\n","\n","")));
+        return buffer.toString();
     }
 }

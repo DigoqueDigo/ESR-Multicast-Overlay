@@ -43,16 +43,24 @@ public class NodeVideoControlWorker implements Runnable{
         String video = videoControlPacket.getVideo();
         boolean firstRequest = !this.videoConsumers.containsKey(video);
 
+        System.out.println("NodeVideoControlWorker : " + videoControlPacket);
+
         // registar um consumer do video
         this.videoConsumers.put(video,consumer);
 
-        // se for o primeiro pedido deste video
-        // encaminhar o request para o melhor provider
+        // se for o unico interessado no video
         if (firstRequest){
+
             String bestProvider = this.videoProviders.getBestProvider(video);
-            this.outBuffers.put(bestProvider,videoControlPacket);
-            this.videoCurrentProviders.put(video,bestProvider);
+
+            if (bestProvider != null){
+                this.outBuffers.put(bestProvider,videoControlPacket);
+                this.videoCurrentProviders.put(video,bestProvider);
+            }
         }
+
+        System.out.println(this.videoConsumers);
+        System.out.println(this.videoCurrentProviders);
     }
 
 
@@ -60,6 +68,8 @@ public class NodeVideoControlWorker implements Runnable{
 
         String consumer = videoControlPacket.getSenderIP(); 
         String video = videoControlPacket.getVideo();
+
+        System.out.println("NodeVideoControlWorker : " + videoControlPacket);
 
         // o consumer nao esta interessado no video
         this.videoConsumers.remove(video,consumer);
@@ -81,6 +91,9 @@ public class NodeVideoControlWorker implements Runnable{
             this.streamBuffers.put(consumer,new byte[0]);
             this.streamBuffers.removeBoundedBuffer(consumer);
         }
+
+        System.out.println(this.videoConsumers);
+        System.out.println(this.videoCurrentProviders);
     }
 
 
@@ -98,7 +111,11 @@ public class NodeVideoControlWorker implements Runnable{
             }
 
             // esperatar os dados na stream do cliente
-            else this.streamBuffers.put(consumer,videoControlPacket.getData());
+            else{
+                System.out.println("NodeVideoControlWorker before write in stream: " + consumer);
+                this.streamBuffers.put(consumer,videoControlPacket.getData());
+                System.out.println("NodeVideoControlWorker after write in stream: " + consumer);
+            }
         }
     }
 
@@ -107,6 +124,8 @@ public class NodeVideoControlWorker implements Runnable{
 
         String consumer = connectionStatePacket.getSenderIP();
     //    String provider = connectionStatePacket.getSenderIP();
+        System.out.println("NodeVideoControlWorker : " + connectionStatePacket);
+
 
         for (String video : this.videoConsumers.getVideos()){
 
@@ -121,13 +140,16 @@ public class NodeVideoControlWorker implements Runnable{
                 this.videoCurrentProviders.remove(currentProvider);
             }
 
+            // o connection flood worker pode remover a entrada antes de eu ver
+            // isto nao garante que e cliente, mas de qualque modo o put nao estoura
             if (this.outBuffers.containsKey(consumer) == false){
                 this.streamBuffers.put(consumer,new byte[0]);
                 this.streamBuffers.removeBoundedBuffer(consumer);
             }
         }
 
-        // o que fazer quando o vizinho e um provider
+        System.out.println(this.videoConsumers);
+        System.out.println(this.videoCurrentProviders);
     }
 
 

@@ -34,9 +34,9 @@ public class CoreWorker implements Runnable{
             this.videoBuffer.push(packet);
         });
 
-        while ((tcpPacket =this.inBuffer.pop()) != null){
+        while ((tcpPacket = this.inBuffer.pop()) != null){
 
-            System.out.println("CoreWorker received packet: " + tcpPacket);
+        //    System.out.println("CoreWorker received packet: " + tcpPacket);
 
             if (handlers.containsKey(tcpPacket.getType())){
                 handlers.get(tcpPacket.getType()).accept(tcpPacket);

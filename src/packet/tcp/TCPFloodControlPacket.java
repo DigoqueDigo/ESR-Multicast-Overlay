@@ -25,7 +25,7 @@ public class TCPFloodControlPacket extends TCPPacket{
     public TCPFloodControlPacket(String serverName, List<String> videos) {
         super(TCP_TYPE.CONTROL_FLOOD);
         this.serverName = serverName;
-        this.timestamp = System.nanoTime();
+        this.timestamp = System.currentTimeMillis();
         this.signatures = new ArrayList<>();
         this.videos = videos;
     }
