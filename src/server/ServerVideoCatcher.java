@@ -57,15 +57,12 @@ public class ServerVideoCatcher implements Runnable{
 
             Process ffmpeg = ffmpegProcessBuilder.start();
             InputStream inputStream = new BufferedInputStream(ffmpeg.getInputStream());
-            System.out.println("ServerVideoCatch ffmpeg started: " + this.video);
+            System.out.println("ServerVideoCatch start ffmpeg: " + this.video);
 
             while ((bytes_read = inputStream.read(data_read,offset,length)) > -1){
 
                 offset += bytes_read;
                 length -= bytes_read;
-
-                System.out.println("ServerVideoCatcher consumers size: " + this.consumers.size());
-                System.out.println("ServerVideoCatcher offset: " + offset);
 
                 if ((this.consumers.size() > 0 && offset > CHUNK_MIN_SIZE) || length == 0){
 
@@ -74,15 +71,13 @@ public class ServerVideoCatcher implements Runnable{
 
                     for (String consumer : this.consumers){
                         this.outBuffers.put(consumer,videoControlPacket);
-                        System.out.println("ServerVideoCatcher send packet to: " + consumer);
+                        System.out.println("ServerVideoCatcher send video packet: "  + video + " -> " + consumer);
                     }
 
                     offset = 0;
                     length = CHUNK_MAX_SIZE;
                 }
             }
-
-            System.out.println("ServerVideoCatch EXIT LOOP ----------------------");
 
             inputStream.close();
             int exitCode = ffmpeg.waitFor();

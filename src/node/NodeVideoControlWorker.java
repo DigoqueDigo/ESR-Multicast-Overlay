@@ -43,7 +43,7 @@ public class NodeVideoControlWorker implements Runnable{
         String video = videoControlPacket.getVideo();
         boolean firstRequest = !this.videoConsumers.containsKey(video);
 
-        System.out.println("NodeVideoControlWorker : " + videoControlPacket);
+        System.out.println("NodeVideoControlWorker receive VIDEO REQUEST: " + video + " <- " + consumer);
 
         // registar um consumer do video
         this.videoConsumers.put(video,consumer);
@@ -56,6 +56,7 @@ public class NodeVideoControlWorker implements Runnable{
             if (bestProvider != null){
                 this.outBuffers.put(bestProvider,videoControlPacket);
                 this.videoCurrentProviders.put(video,bestProvider);
+                System.out.println("NodeVideoControlWorker send VIDEO REQUEST: " + video + " -> " + bestProvider);
             }
         }
 
@@ -69,7 +70,7 @@ public class NodeVideoControlWorker implements Runnable{
         String consumer = videoControlPacket.getSenderIP(); 
         String video = videoControlPacket.getVideo();
 
-        System.out.println("NodeVideoControlWorker : " + videoControlPacket);
+        System.out.println("NodeVideoControlWorker receive VIDEO CANCEL: " + video + " <- " + consumer);
 
         // o consumer nao esta interessado no video
         this.videoConsumers.remove(video,consumer);
@@ -82,6 +83,7 @@ public class NodeVideoControlWorker implements Runnable{
             if (currentProvider != null){
                 this.outBuffers.put(currentProvider,videoControlPacket);
                 this.videoCurrentProviders.remove(video);
+                System.out.println("NodeVideoControlWorker send VIDEO CANCEL: " + video + " -> " + currentProvider);
             }
         }
 
@@ -90,6 +92,7 @@ public class NodeVideoControlWorker implements Runnable{
         if (this.outBuffers.containsKey(consumer) == false){
             this.streamBuffers.put(consumer,new byte[0]);
             this.streamBuffers.removeBoundedBuffer(consumer);
+            System.out.println("NodeVideoControlWorker stop client stream: " + video + " :: " + consumer);
         }
 
         System.out.println(this.videoConsumers);
@@ -111,11 +114,9 @@ public class NodeVideoControlWorker implements Runnable{
             }
 
             // esperatar os dados na stream do cliente
-            else{
-                System.out.println("NodeVideoControlWorker before write in stream: " + consumer);
-                this.streamBuffers.put(consumer,videoControlPacket.getData());
-                System.out.println("NodeVideoControlWorker after write in stream: " + consumer);
-            }
+            else this.streamBuffers.put(consumer,videoControlPacket.getData());
+
+            System.out.println("NodeVideoControlWorker send video packet: " + video + " -> "+ consumer);
         }
     }
 
@@ -123,9 +124,8 @@ public class NodeVideoControlWorker implements Runnable{
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
 
         String consumer = connectionStatePacket.getSenderIP();
-    //    String provider = connectionStatePacket.getSenderIP();
-        System.out.println("NodeVideoControlWorker : " + connectionStatePacket);
 
+        System.out.println("NodeVideoControlWorker receiver CONNECTION LOST: " + consumer);
 
         for (String video : this.videoConsumers.getVideos()){
 
@@ -134,10 +134,15 @@ public class NodeVideoControlWorker implements Runnable{
             // se ninguem esta interessado no video
             // informar o provider que pode cancelar a transmissao
             if (this.videoConsumers.containsKey(video) == false){
+
                 TCPVideoControlPacket videoControlPacket = new TCPVideoControlPacket(OVERLAY_VIDEO_PROTOCOL.VIDEO_CANCEL,video);
                 String currentProvider = this.videoCurrentProviders.get(video);
-                this.outBuffers.put(currentProvider,videoControlPacket);
-                this.videoCurrentProviders.remove(currentProvider);
+
+                if (currentProvider != null){
+                    this.outBuffers.put(currentProvider,videoControlPacket);
+                    this.videoCurrentProviders.remove(currentProvider);
+                    System.out.println("NodeVideoControlWorker send VIDEO CANCEL: " + video + " -> " + currentProvider);
+                } 
             }
 
             // o connection flood worker pode remover a entrada antes de eu ver

@@ -38,18 +38,4 @@ public final class IO{
 
         return files;
     }
-
-
-    public static int mkfifo(String filename) throws IOException, InterruptedException{
-        ProcessBuilder processBuilder = new ProcessBuilder("mkfifo", filename);
-        Process process = processBuilder.start();
-        return process.waitFor();
-    }
-
-
-    public static int rm(String filename) throws IOException, InterruptedException{
-        ProcessBuilder processBuilder = new ProcessBuilder("rm", filename);
-        Process process = processBuilder.start();
-        return process.waitFor();
-    }
 }

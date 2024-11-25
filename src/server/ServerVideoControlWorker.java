@@ -30,12 +30,13 @@ public class ServerVideoControlWorker implements Runnable{
 
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
-
-        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
-
+        
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
         boolean startCatcher = !this.videoCatchers.containsKey(video);
+
+        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
+        System.out.println("ServerVideoControlWorker receive VIDEO REQUEST: " + video + " <- " + consumer);
 
         this.videoCatchers.putIfAbsent(video,new CopyOnWriteArrayList<>());
         this.videoCatchers.get(video).add(consumer);
@@ -50,10 +51,11 @@ public class ServerVideoControlWorker implements Runnable{
 
     private void handleControlVideoCancel(TCPVideoControlPacket videoControlPacket){
 
-        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
-
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
+
+        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
+        System.out.println("ServerVideoControlWorker receive VIDEO CANCEL: " + video + " <- " + consumer);
 
         if (this.videoCatchers.containsKey(video)){
             CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
@@ -64,9 +66,10 @@ public class ServerVideoControlWorker implements Runnable{
 
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
 
-        System.out.println("ServerVideoControlWorker: " + connectionStatePacket);
-
         String consumer = connectionStatePacket.getSenderIP();
+
+        System.out.println("ServerVideoControlWorker: " + connectionStatePacket);
+        System.out.println("ServerVideoControlWorker receive CONNECTION LOST: " + consumer);
 
         for (String video : this.videoCatchers.keySet()){
             CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);

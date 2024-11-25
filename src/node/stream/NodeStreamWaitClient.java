@@ -51,7 +51,6 @@ public class NodeStreamWaitClient implements Runnable{
         tcpVideoControlPacket.setSenderIP(udpVideoControlPacket.getSenderIP());
         tcpVideoControlPacket.setSenderPort(udpVideoControlPacket.getSenderPort());
 
-        System.out.println("NodeStreamWaitClient push :" + tcpVideoControlPacket);
         this.inBuffer.push(tcpVideoControlPacket);
     }
 
@@ -126,6 +125,6 @@ public class NodeStreamWaitClient implements Runnable{
 
         catch (Exception e){
             e.printStackTrace();
-        }    
+        }
     }
 }

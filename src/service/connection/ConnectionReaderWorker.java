@@ -32,9 +32,7 @@ public class ConnectionReaderWorker implements Runnable{
 
             while ((receivePacket = tcpCarrier.receive()) != null){
                 receivePacket.setReceiverIP(myInterface);
-                System.out.println("ConnectionReaderWorker before push");
                 this.inBuffer.push(receivePacket);
-                System.out.println("ConnectionReaderWorker after push");
             }
         }
 
