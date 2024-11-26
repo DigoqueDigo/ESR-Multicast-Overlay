@@ -19,7 +19,8 @@ mvn clean compile assembly:single
 
 Executar classes do programa
 ```
-mvn exec:java -Dexec.mainClass="bootstrapper.Bootstrapper" -Dexec.args="<config.json>"
-mvn exec:java -Dexec.mainClass="server.Server" -Dexec.args="<nodename> <bootstrapper_IP>"
-mvn exec:java -Dexec.mainClass="client.Client" -Dexec.args="<nodename> <bootstrapper_IP>"
+java -cp ESR-Projeto-1.0-jar-with-dependencies.jar bootstrapper.Bootstrapper <config_file>
+java -cp ESR-Projeto-1.0-jar-with-dependencies.jar client.Client <name> <bootstrapper_ip>
+java -cp ESR-Projeto-1.0-jar-with-dependencies.jar node.Node <name> <bootstrapper_ip>
+java -cp ESR-Projeto-1.0-jar-with-dependencies.jar server.Server <name> <video_folder> <bootstrapper_ip>
 ```
