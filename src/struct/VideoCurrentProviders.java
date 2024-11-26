@@ -4,11 +4,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
+import com.sarojaba.prettytable4j.PrettyTable;
 
 
 public class VideoCurrentProviders{
 
+    /*
+     * tabela com o atual provider do video
+     * video1 -> O1
+     * video2 -> O3
+     */
     private ReentrantLock lock;
     private Map<String,String> currentProviders;
 
@@ -104,13 +109,13 @@ public class VideoCurrentProviders{
         try{
             this.lock.lock();
 
-            StringBuilder buffer = new StringBuilder();
-            buffer.append("----- VIDEO CURRENT PROVIDERS -----");
-            buffer.append(this.currentProviders.entrySet().stream()
-                .map(x -> x.getKey() + " :: " + x.getValue())
-                .collect(Collectors.joining("\n","\n","")));
+            PrettyTable pt = PrettyTable.fieldNames("Video","Provider");
 
-            return buffer.toString();
+            for (Map.Entry<String,String> entry : this.currentProviders.entrySet()){
+                pt.addRow(entry.getKey(),entry.getValue());
+            }
+
+            return pt.toString();
         }
 
         catch (Exception e){

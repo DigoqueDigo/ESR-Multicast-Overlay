@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import com.sarojaba.prettytable4j.PrettyTable;
 
 
 public class VideoConsumers{
@@ -55,11 +55,15 @@ public class VideoConsumers{
 
 
     public String toString(){
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("----- VIDEO CONSUMERS -----");
-        buffer.append(this.consumers.entrySet().stream()
-            .map(x -> x.getKey() + " :: " + x.getValue())
-            .collect(Collectors.joining("\n","\n","")));
-        return buffer.toString();
+
+        PrettyTable pt = PrettyTable.fieldNames("Video", "Consumer");
+
+        for (Map.Entry<String,Set<String>> entry : this.consumers.entrySet()){
+            for (String consumer : entry.getValue()){
+                pt.addRow(entry.getKey(),consumer);
+            }
+        }
+
+        return pt.toString();
     }
 }

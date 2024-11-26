@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import com.sarojaba.prettytable4j.PrettyTable;
 
 
 public class VideoProviders{
@@ -227,14 +228,17 @@ public class VideoProviders{
 
         try{
             this.lock.lock();
-            StringBuilder buffer = new StringBuilder();
 
-            buffer.append("----- VIDEO PROVIDERS -----");
-            buffer.append(this.providers.entrySet().stream()
-                .map(entry -> entry.getKey() + " :: " + entry.getValue())
-                .collect(Collectors.joining("\n","\n","")));
+            PrettyTable pt = PrettyTable.fieldNames("Video","Provider","Delay");
 
-            return buffer.toString();
+            for (Map.Entry<String,List<Pair<String,Long>>> entry : this.providers.entrySet()){
+                for (Pair<String,Long> provider : entry.getValue()){
+                    pt.addRow(entry.getKey(),provider.getLeft(),provider.getRight());
+                }
+            }
+
+            pt.comma(true);
+            return pt.toString();
         }
 
         catch (Exception e){
