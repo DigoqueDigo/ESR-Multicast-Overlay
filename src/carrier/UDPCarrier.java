@@ -12,12 +12,11 @@ import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoListPacket;
 import packet.udp.UDPPacket.UDP_TYPE;
-import utils.IO;
+import utils.Crypto;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 
 
 public class UDPCarrier{
@@ -67,37 +66,54 @@ public class UDPCarrier{
     }
 
 
-    private byte[] prepare_serialize(UDPPacket udpPacket) throws IOException{
+    private byte[] serialize(UDPPacket udpPacket) throws Exception{
 
+        byte[] serialize = udpPacket.serialize();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
-        byte[] serialize = udpPacket.serialize();
         dataOutputStream.writeUTF(udpPacket.getClass().getCanonicalName());
         dataOutputStream.writeInt(serialize.length);
         dataOutputStream.write(serialize);
+        dataOutputStream.flush();
 
-        byte[] data = byteArrayOutputStream.toByteArray();
+        byte[] plainText = byteArrayOutputStream.toByteArray();
+        byte[] crypto = Crypto.encrypt(plainText);
+
+        byteArrayOutputStream.reset();
+        dataOutputStream.writeInt(crypto.length);
+        dataOutputStream.write(crypto);
+        dataOutputStream.flush();
+
+        byte[] result = byteArrayOutputStream.toByteArray();
         dataOutputStream.close();
         byteArrayOutputStream.close();
 
-        return data;
+        return result;
     }
 
 
-    private UDPPacket prepare_deserialize(byte[] data) throws IOException, ClassNotFoundException{
+    private UDPPacket deserialize(byte[] encrypt) throws Exception{
 
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(encrypt);
         DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+
+        int crypto_size = dataInputStream.readInt();
+        byte[] crypto = new byte[crypto_size];
+
+        dataInputStream.readFully(crypto);
+        dataInputStream.close();
+        byteArrayInputStream.close();
+
+        byte[] plaintext = Crypto.decrypt(crypto);
+        byteArrayInputStream = new ByteArrayInputStream(plaintext);
+        dataInputStream = new DataInputStream(byteArrayInputStream);
 
         Class<?> clazz = Class.forName(dataInputStream.readUTF());
         int deserialize_size = dataInputStream.readInt();
         byte[] deserialize = new byte[deserialize_size];
 
-        if (IO.readAllBytes(dataInputStream,deserialize,deserialize_size) != deserialize_size){
-            throw new IOException("UDPPacket reading incomplete");
-        }
-
+        dataInputStream.readFully(deserialize);
         UDPPacket udpPacket = deserializeMap.get(clazz).apply(deserialize);
 
         dataInputStream.close();
@@ -107,10 +123,10 @@ public class UDPCarrier{
     }
 
 
-    public void send(UDPPacket udpPacket) throws IOException, ClassNotFoundException{
+    public void send(UDPPacket udpPacket) throws Exception{
 
         boolean condition = true;
-        byte[] data = this.prepare_serialize(udpPacket);
+        byte[] data = this.serialize(udpPacket);
 
         DatagramPacket sendPacket = new DatagramPacket(data, data.length);
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
@@ -124,7 +140,7 @@ public class UDPCarrier{
 
                 this.socket.receive(receivePacket);
                 byte[] receive_data = receivePacket.getData();
-                UDPPacket receiveUDPPacket = this.prepare_deserialize(receive_data);
+                UDPPacket receiveUDPPacket = this.deserialize(receive_data);
 
                 if (receiveUDPPacket.getType() == UDP_TYPE.ACK && receiveUDPPacket.getID() == udpPacket.getID()){
                     condition = false;
@@ -137,7 +153,7 @@ public class UDPCarrier{
     }
 
 
-    public UDPPacket receive() throws SocketException, IOException, ClassNotFoundException{
+    public UDPPacket receive() throws Exception{
 
         boolean condition = true;
         UDPPacket udpResultPacket = null;
@@ -153,7 +169,7 @@ public class UDPCarrier{
 
                 this.socket.receive(receivePacket);
                 byte[] receive_data = receivePacket.getData();
-                UDPPacket receiveUDPPacket = this.prepare_deserialize(receive_data);
+                UDPPacket receiveUDPPacket = this.deserialize(receive_data);
 
                 if (udpResultPacket == null && udpAckPacket == null){
 
@@ -171,7 +187,7 @@ public class UDPCarrier{
                 }
 
                 if (receiveUDPPacket.getID() == udpResultPacket.getID()){
-                    ackPacket.setData(this.prepare_serialize(udpAckPacket));
+                    ackPacket.setData(this.serialize(udpAckPacket));
                     this.socket.send(ackPacket);
                     System.out.println("UDPCarrrier: send ACK");
                 }

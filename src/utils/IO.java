@@ -1,27 +1,10 @@
 package utils;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public final class IO{
-
-    public static int readAllBytes(InputStream inputStream, byte[] data, int length) throws IOException{
-
-        int  attempt = 1;
-        int bytes_read = 0;
-
-        for (int rest = length; attempt > 0 && bytes_read < length; rest -= attempt){
-
-            attempt = inputStream.read(data,bytes_read,rest);
-            if (attempt > 0) bytes_read += attempt;
-        }
-
-        return bytes_read;
-    }
-
 
     public static List<String> listFiles(String folder){
 
