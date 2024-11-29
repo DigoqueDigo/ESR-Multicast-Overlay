@@ -2,6 +2,7 @@ package node.stream;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPVideoControlPacket;
 import packet.tcp.TCPVideoControlPacket.OVERLAY_VIDEO_PROTOCOL;
+import packet.udp.UDPLinkPacket;
 import packet.udp.UDPPacket;
 import packet.udp.UDPPacket.UDP_TYPE;
 import packet.udp.UDPVideoControlPacket;
@@ -94,6 +95,31 @@ public class NodeStreamWaitClient implements Runnable{
     }
 
 
+    private void handleLink(UDPLinkPacket linkPacket){
+
+        try{
+
+            String clientIP = linkPacket.getSenderIP();
+            int clientPort = linkPacket.getSenderPort();
+
+            UDPCarrier udpCarrier = new UDPCarrier();
+            InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
+            UDPLinkPacket response = new UDPLinkPacket();
+
+            System.out.println("NodeStreamWaitClient send: " + response);
+
+            udpCarrier.connect(socketAddress);
+            udpCarrier.send(response);
+            udpCarrier.disconnect();
+            udpCarrier.close();
+        }
+
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
     public void run(){
 
         try{
@@ -105,6 +131,7 @@ public class NodeStreamWaitClient implements Runnable{
 
             handlers.put(UDP_TYPE.VIDEO_CONTROL, packet -> this.handleVideoControl((UDPVideoControlPacket)packet));
             handlers.put(UDP_TYPE.VIDEO_LIST, packet -> this.handleVideoList((UDPVideoListPacket)packet));
+            handlers.put(UDP_TYPE.LINK, packet -> this.handleLink((UDPLinkPacket)packet));
 
             System.out.println("NodeStreamWaitClient service started");
 

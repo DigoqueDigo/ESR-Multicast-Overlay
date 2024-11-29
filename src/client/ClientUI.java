@@ -1,6 +1,7 @@
 package client;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -12,16 +13,17 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
 import node.stream.NodeStreamWaitClient;
 import node.stream.NodeStreamWorker;
+import struct.EdgeProviders;
 
 
 public class ClientUI{
 
-    private List<String> edgeNodes;
     private Terminal terminal;
+    private EdgeProviders edgeProviders;
 
 
-    public ClientUI(List<String> edgeNodes) throws IOException{
-        this.edgeNodes = edgeNodes.stream().collect(Collectors.toList());
+    public ClientUI(EdgeProviders edgeProviders) throws IOException{
+        this.edgeProviders = edgeProviders;
         this.terminal = TerminalBuilder.builder().dumb(true).build();
     }
 
@@ -31,21 +33,22 @@ public class ClientUI{
     }
 
 
-    private String select_option(String prompt, List<String> options) throws EndOfFileException{
+    private String select_option(Supplier<String> prompt, Supplier<List<String>> options) throws EndOfFileException{
 
         String userChoice = null;
-        StringsCompleter stringsCompleter = new StringsCompleter(options);
-
-        LineReader reader = LineReaderBuilder.builder()
-            .terminal(this.terminal)
-            .completer(stringsCompleter).build();
 
         while (userChoice == null){
 
-            userChoice = reader.readLine(prompt);
+            StringsCompleter stringsCompleter = new StringsCompleter(options.get());
+
+            LineReader reader = LineReaderBuilder.builder()
+                .terminal(this.terminal)
+                .completer(stringsCompleter).build();
+
+            userChoice = reader.readLine(prompt.get());
             userChoice = userChoice.strip();
 
-            if (options.contains(userChoice) == false){
+            if (options.get().contains(userChoice) == false){
                 userChoice = null;
             }
         }
@@ -74,15 +77,22 @@ public class ClientUI{
 
                 while (videoList == null){
 
-                    selectedEdgeNode = this.select_option(edge_prompt,this.edgeNodes);
+                    selectedEdgeNode = this.select_option(
+                        () -> this.edgeProviders.toString() + "\n" + edge_prompt,
+                        () -> this.edgeProviders.rowKeySet().stream().collect(Collectors.toList()));
+
                     ClientVideoGather clientVideoGrather = new ClientVideoGather(
                         selectedEdgeNode,NodeStreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT);
 
                     videoList = clientVideoGrather.getVideoList();
                 }
 
-                String selectedVideo = this.select_option(video_prompt,videoList);
-                ClientConnection clientConnection = new ClientConnection(
+                final List<String> finalVideoList = videoList;
+                String selectedVideo = this.select_option(
+                    () -> video_prompt,
+                    () -> finalVideoList);
+
+                ClientStream clientConnection = new ClientStream(
                     selectedVideo,
                     selectedEdgeNode,
                     NodeStreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT,

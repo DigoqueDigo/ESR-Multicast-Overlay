@@ -6,6 +6,7 @@ public abstract class UDPPacket extends Packet{
 
     public enum UDP_TYPE{
         ACK,
+        LINK,
         VIDEO_LIST,
         VIDEO_CONTROL
     }
@@ -17,14 +18,14 @@ public abstract class UDPPacket extends Packet{
     public UDPPacket(UDP_TYPE type){
         super();
         this.type = type;
-        this.id = System.currentTimeMillis();
+        this.id = System.nanoTime();
     }
 
 
     public UDPPacket(UDP_TYPE type, String receiverIP, int receiverPort, String senderIP, int senderPort){
         super(receiverIP,receiverPort,senderIP,senderPort);
         this.type = type;
-        this.id = System.currentTimeMillis();
+        this.id = System.nanoTime();
     }
 
 

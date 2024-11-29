@@ -2,13 +2,13 @@ package client;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.PortUnreachableException;
+import java.net.SocketException;
 import carrier.UDPCarrier;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoControlPacket.EDGE_VIDEO_PROTOCOL;
 
 
-public class ClientConnection{
+public class ClientStream{
 
     private final String video;
     private final String edgeNodeIP;
@@ -16,7 +16,7 @@ public class ClientConnection{
     private final int edgeNodeStreamPort;
 
 
-    public ClientConnection(String video, String edgeNodeIP, int edgeNodeConnectionPort, int edgeNodeStreamPort){
+    public ClientStream(String video, String edgeNodeIP, int edgeNodeConnectionPort, int edgeNodeStreamPort){
         this.video = video;
         this.edgeNodeIP = edgeNodeIP;
         this.edgeNodeConnectionPort = edgeNodeConnectionPort;
@@ -34,8 +34,6 @@ public class ClientConnection{
             UDPVideoControlPacket videoRequest = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.VIDEO_REQUEST,this.video);
             UDPVideoControlPacket videoCancel = new UDPVideoControlPacket(EDGE_VIDEO_PROTOCOL.VIDEO_CANCEL,this.video);
 
-            System.out.println("ClientConnection send packet: " + videoRequest);
-
             udpCarrier.connect(socketAddress);
             udpCarrier.send(videoRequest);
             udpCarrier.disconnect();
@@ -52,7 +50,6 @@ public class ClientConnection{
             );
 
             Process ffplay = ffplayProcessBuilder.start();
-            System.out.println("ClientConnection ffplay started: " + link);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(ffplay.getErrorStream()))){
                 String line;
@@ -62,9 +59,8 @@ public class ClientConnection{
             }
 
             int ffplayExitCode = ffplay.waitFor();
-            System.out.println("ClientConnection ffplay exit code: " + ffplayExitCode);
-
-            System.out.println("ClientConnection send packet: " + videoCancel);
+            System.out.println("ClientStream ffplay exit code: " + ffplayExitCode);
+            System.out.println("ClientStream send packet: " + videoCancel);
 
             udpCarrier.connect(socketAddress);
             udpCarrier.send(videoCancel);
@@ -72,8 +68,8 @@ public class ClientConnection{
             udpCarrier.close();
         }
 
-        catch (PortUnreachableException e){
-            System.out.println("Can not contact: " + this.edgeNodeIP + ":" + this.edgeNodeConnectionPort);
+        catch (SocketException e){
+            System.out.println("Can not contact: " + this.edgeNodeIP);
         }
 
         catch (Exception e){

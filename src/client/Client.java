@@ -1,10 +1,13 @@
 package client;
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 import bootstrapper.Bootstrapper;
 import service.gather.BootstrapperGather;
+import struct.EdgeProviders;
 
 
 public class Client{
@@ -20,8 +23,17 @@ public class Client{
         List<String> edgeNodes = bootstrapperInfo.getJSONArray("neighbours")
             .toList().stream().map(Object::toString).collect(Collectors.toList());
 
-        ClientUI clientUI = new ClientUI(edgeNodes);
+        EdgeProviders edgeProviders = new EdgeProviders();
+        TimerTask clientLinkTimerTask = new ClientLinkTimer(edgeNodes,edgeProviders);
+        Timer clientLinkTimer = new Timer();
+
+        clientLinkTimer.schedule(clientLinkTimerTask,ClientLinkTimer.DELAY,ClientLinkTimer.PERIOD);
+
+        ClientUI clientUI = new ClientUI(edgeProviders);
         clientUI.start();
         clientUI.close();
+
+        clientLinkTimerTask.cancel();
+        clientLinkTimer.cancel();
     }
 }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import packet.udp.UDPAckPacket;
+import packet.udp.UDPLinkPacket;
 import packet.udp.UDPPacket;
 import packet.udp.UDPVideoControlPacket;
 import packet.udp.UDPVideoListPacket;
@@ -24,16 +25,20 @@ public class UDPCarrier{
     private static final int BUFFER_SIZE = 4096;
     private static final int SEND_TIMEOUT = 20;
     private static final int RECEIVE_TIMEOUT = 500;
+    private static final int ATTEMPTS_LIMIT = 100; 
+
     private static Map<Class<?>,Function<byte[],UDPPacket>> deserializeMap = new HashMap<>();
 
     static{
-        // Adicionar um metodo de deserialize por extensao de TCPPacket
+        // Adicionar um metodo de deserialize por extensao de UDPPacket
         deserializeMap.put(UDPAckPacket.class, x -> UDPAckPacket.deserialize(x));
+        deserializeMap.put(UDPLinkPacket.class, x -> UDPLinkPacket.deserialize(x));
         deserializeMap.put(UDPVideoListPacket.class, x -> UDPVideoListPacket.deserialize(x));
         deserializeMap.put(UDPVideoControlPacket.class, x -> UDPVideoControlPacket.deserialize(x));
     }
 
     private DatagramSocket socket;
+    private SocketAddress socketAddress;
 
 
     public UDPCarrier() throws SocketException{
@@ -43,16 +48,17 @@ public class UDPCarrier{
 
     public UDPCarrier(SocketAddress socketAddress) throws SocketException{
         this.socket = new DatagramSocket(socketAddress);
+        this.socketAddress = socketAddress;
     }
 
 
-    public void connect(SocketAddress socketAddress) throws SocketException{
-        this.socket.connect(socketAddress);
+    public void connect(SocketAddress socketAddress){
+        this.socketAddress = socketAddress;
     }
 
 
     public void disconnect(){
-        this.socket.disconnect();
+        this.socketAddress = null;
     }
 
 
@@ -123,18 +129,23 @@ public class UDPCarrier{
     }
 
 
-    public void send(UDPPacket udpPacket) throws Exception{
+    public int send(UDPPacket udpPacket) throws Exception{
 
+        int attempts = 0;
         boolean condition = true;
         byte[] data = this.serialize(udpPacket);
 
-        DatagramPacket sendPacket = new DatagramPacket(data, data.length);
+        System.out.println("UDPCarrier send ID: " + udpPacket.getID());
+
+        DatagramPacket sendPacket = new DatagramPacket(data, data.length, this.socketAddress);
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
         this.socket.setSoTimeout(SEND_TIMEOUT);
 
-        while (condition){
+        while (condition && attempts < ATTEMPTS_LIMIT){
 
+            attempts++;
             this.socket.send(sendPacket);
+            System.out.println("UDPCarrier send packet: " + attempts);
 
             try{
 
@@ -150,6 +161,12 @@ public class UDPCarrier{
 
             catch (SocketTimeoutException e) {}
         }
+
+        if (attempts == ATTEMPTS_LIMIT){
+            throw new SocketException("Attempt limit reached");
+        }
+
+        return attempts;
     }
 
 
@@ -161,6 +178,8 @@ public class UDPCarrier{
 
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
         DatagramPacket ackPacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
+
+        long timer = System.currentTimeMillis();
         this.socket.setSoTimeout(RECEIVE_TIMEOUT);
 
         while (condition){
@@ -171,9 +190,10 @@ public class UDPCarrier{
                 byte[] receive_data = receivePacket.getData();
                 UDPPacket receiveUDPPacket = this.deserialize(receive_data);
 
-                if (udpResultPacket == null && udpAckPacket == null){
+                if (udpResultPacket == null && receiveUDPPacket.getType() != UDP_TYPE.ACK){
 
                     udpResultPacket = receiveUDPPacket;
+                    System.out.println("UDPCarrier receive ID: " + udpResultPacket.getID());
 
                     udpResultPacket.setSenderIP(receivePacket.getAddress().getHostAddress());
                     udpResultPacket.setSenderPort(receivePacket.getPort());
@@ -183,24 +203,25 @@ public class UDPCarrier{
 
                     udpAckPacket = new UDPAckPacket();
                     udpAckPacket.setID(udpResultPacket.getID());
-                    this.socket.connect(receivePacket.getAddress(), receivePacket.getPort());
+                    this.socketAddress = receivePacket.getSocketAddress();
                 }
 
-                if (receiveUDPPacket.getID() == udpResultPacket.getID()){
+                if (udpAckPacket != null && receiveUDPPacket.getID() == udpResultPacket.getID()){
                     ackPacket.setData(this.serialize(udpAckPacket));
+                    ackPacket.setSocketAddress(this.socketAddress);
                     this.socket.send(ackPacket);
+                    timer = System.currentTimeMillis();
                     System.out.println("UDPCarrrier: send ACK");
                 }
 
-                else{
-                    condition = false;
-                    this.socket.disconnect();
+                else if (System.currentTimeMillis() - timer > RECEIVE_TIMEOUT){
+                    throw new SocketTimeoutException();
                 }
             }
 
             catch (SocketTimeoutException e){
                 condition = false;
-                this.socket.disconnect();
+                this.socketAddress = null;
             }
         }
 
