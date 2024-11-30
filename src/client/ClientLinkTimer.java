@@ -65,7 +65,6 @@ public class ClientLinkTimer extends TimerTask{
             }
 
             udpCarrier.close();
-            System.out.println(this.edgeProviders);
         }
 
         catch (Exception e){

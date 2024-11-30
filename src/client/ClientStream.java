@@ -69,7 +69,7 @@ public class ClientStream{
         }
 
         catch (SocketException e){
-            System.out.println("Can not contact: " + this.edgeNodeIP);
+            System.out.println("ClientStream can not contact: " + this.edgeNodeIP);
         }
 
         catch (Exception e){

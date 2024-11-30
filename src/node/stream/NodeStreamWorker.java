@@ -1,5 +1,6 @@
 package node.stream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 import struct.BoundedBuffer;
 
@@ -32,7 +33,7 @@ public class NodeStreamWorker implements Runnable{
                 "-i", "-",
                 "-f", "mpegts",
                 link
-            );
+            ).redirectError(new File("/dev/null"));
 
             Process ffmpeg = ffmpegProcessBuilder.start();
             OutputStream outputStream = new BufferedOutputStream(ffmpeg.getOutputStream());

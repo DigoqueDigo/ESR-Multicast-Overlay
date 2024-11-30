@@ -1,6 +1,6 @@
 package server;
 import java.io.BufferedInputStream;
-import java.io.InputStream;
+import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CopyOnWriteArrayList;
 import packet.tcp.TCPPacket;
@@ -53,10 +53,10 @@ public class ServerVideoCatcher implements Runnable{
                 "-preset", "ultrafast",
                 "-f", "mpegts",
                 "-"
-            );
+            ).redirectError(new File("/dev/null"));
 
             Process ffmpeg = ffmpegProcessBuilder.start();
-            InputStream inputStream = new BufferedInputStream(ffmpeg.getInputStream());
+            BufferedInputStream inputStream = new BufferedInputStream(ffmpeg.getInputStream());
             System.out.println("ServerVideoCatch start ffmpeg: " + this.video);
 
             while ((bytes_read = inputStream.read(data_read,offset,length)) > -1){
@@ -71,7 +71,7 @@ public class ServerVideoCatcher implements Runnable{
 
                     for (String consumer : this.consumers){
                         this.outBuffers.put(consumer,videoControlPacket);
-                        System.out.println("ServerVideoCatcher send video packet: "  + video + " -> " + consumer);
+                        System.out.println("ServerVideoCatcher send VIDEO REPLY: " + video + " -> " + consumer);
                     }
 
                     offset = 0;

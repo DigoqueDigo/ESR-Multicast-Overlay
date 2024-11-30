@@ -11,6 +11,7 @@ import packet.tcp.TCPPacket.TCP_TYPE;
 import packet.tcp.TCPVideoControlPacket;
 import struct.BoundedBuffer;
 import struct.MapBoundedBuffer;
+import utils.PrettyPrint;
 
 
 public class ServerVideoControlWorker implements Runnable{
@@ -18,34 +19,34 @@ public class ServerVideoControlWorker implements Runnable{
     private final String videoFolder;
     private BoundedBuffer<TCPPacket> videoBuffer;
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
-    private Map<String,CopyOnWriteArrayList<String>> videoCatchers;
+    private Map<String,CopyOnWriteArrayList<String>> videoConsumers;
 
 
     public ServerVideoControlWorker(String videoFolfer, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.videoFolder = videoFolfer;
         this.videoBuffer = videoBuffer;
         this.outBuffers = outBuffers;
-        this.videoCatchers = new HashMap<>();
+        this.videoConsumers = new HashMap<>();
     }
 
 
     private void handleControlVideoRequest(TCPVideoControlPacket videoControlPacket){
-        
+
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
-        boolean startCatcher = !this.videoCatchers.containsKey(video);
+        boolean startCatcher = !this.videoConsumers.containsKey(video);
 
-        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
-        System.out.println("ServerVideoControlWorker receive VIDEO REQUEST: " + video + " <- " + consumer);
-
-        this.videoCatchers.putIfAbsent(video,new CopyOnWriteArrayList<>());
-        this.videoCatchers.get(video).add(consumer);
+        this.videoConsumers.putIfAbsent(video,new CopyOnWriteArrayList<>());
+        this.videoConsumers.get(video).add(consumer);
 
         if (startCatcher){
-            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+            CopyOnWriteArrayList<String> consumers = this.videoConsumers.get(video);
             ServerVideoCatcher serverVideoCatcher = new ServerVideoCatcher(video,videoFolder,consumers,outBuffers);
             new Thread(serverVideoCatcher).start();
         }
+
+        System.out.println("ServerVideoControlWorker receive VIDEO REQUEST: " + video + " <- " + consumer);
+        System.out.println(PrettyPrint.toString(videoConsumers,"Video","Consumer"));
     }
 
 
@@ -54,13 +55,13 @@ public class ServerVideoControlWorker implements Runnable{
         String consumer = videoControlPacket.getSenderIP();
         String video = videoControlPacket.getVideo();
 
-        System.out.println("ServerVideoControlWorker: " + videoControlPacket);
-        System.out.println("ServerVideoControlWorker receive VIDEO CANCEL: " + video + " <- " + consumer);
-
-        if (this.videoCatchers.containsKey(video)){
-            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+        if (this.videoConsumers.containsKey(video)){
+            CopyOnWriteArrayList<String> consumers = this.videoConsumers.get(video);
             consumers.remove(consumer);
         }
+
+        System.out.println("ServerVideoControlWorker receive VIDEO CANCEL: " + video + " <- " + consumer);
+        System.out.println(PrettyPrint.toString(videoConsumers,"Video","Consumer"));
     }
 
 
@@ -68,13 +69,13 @@ public class ServerVideoControlWorker implements Runnable{
 
         String consumer = connectionStatePacket.getSenderIP();
 
-        System.out.println("ServerVideoControlWorker: " + connectionStatePacket);
-        System.out.println("ServerVideoControlWorker receive CONNECTION LOST: " + consumer);
-
-        for (String video : this.videoCatchers.keySet()){
-            CopyOnWriteArrayList<String> consumers = this.videoCatchers.get(video);
+        for (String video : this.videoConsumers.keySet()){
+            CopyOnWriteArrayList<String> consumers = this.videoConsumers.get(video);
             consumers.remove(consumer);
         }
+
+        System.out.println("ServerVideoControlWorker receive CONNECTION LOST: " + consumer);
+        System.out.println(PrettyPrint.toString(videoConsumers,"Video","Consumer"));
     }
 
 
