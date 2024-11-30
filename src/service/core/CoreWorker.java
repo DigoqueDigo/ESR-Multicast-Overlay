@@ -26,17 +26,15 @@ public class CoreWorker implements Runnable{
         TCPPacket tcpPacket;
         Map<TCP_TYPE,Consumer<TCPPacket>> handlers = new HashMap<>();
 
+        handlers.put(TCP_TYPE.CONTROL_VIDEO, packet -> this.videoBuffer.push(packet));
         handlers.put(TCP_TYPE.CONTROL_FLOOD, packet -> this.controlBuffer.push(packet));
         handlers.put(TCP_TYPE.CONTROL_GRANDFATHER, packet -> this.controlBuffer.push(packet));
-        handlers.put(TCP_TYPE.CONTROL_VIDEO, packet -> this.videoBuffer.push(packet));
         handlers.put(TCP_TYPE.CONTROL_CONNECTION_STATE, packet -> {
             this.controlBuffer.push(packet);
             this.videoBuffer.push(packet);
         });
 
         while ((tcpPacket = this.inBuffer.pop()) != null){
-
-        //    System.out.println("CoreWorker received packet: " + tcpPacket);
 
             if (handlers.containsKey(tcpPacket.getType())){
                 handlers.get(tcpPacket.getType()).accept(tcpPacket);

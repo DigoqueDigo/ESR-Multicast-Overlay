@@ -27,12 +27,12 @@ public class NodeVideoControlWorker implements Runnable{
     private MapBoundedBuffer<String,TCPPacket> outBuffers;
 
 
-    public NodeVideoControlWorker(VideoProviders videoProviders, VideoCurrentProviders videoCurrentProviders, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streaBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
+    public NodeVideoControlWorker(VideoProviders videoProviders, VideoCurrentProviders videoCurrentProviders, BoundedBuffer<TCPPacket> videoBuffer, MapBoundedBuffer<String,byte[]> streamBuffers, MapBoundedBuffer<String,TCPPacket> outBuffers){
         this.videoProviders = videoProviders;
         this.videoConsumers = new VideoConsumers();
         this.videoCurrentProviders = videoCurrentProviders;
         this.videoBuffer = videoBuffer;
-        this.streamBuffers = streaBuffers;
+        this.streamBuffers = streamBuffers;
         this.outBuffers = outBuffers;
     }
 
@@ -92,7 +92,7 @@ public class NodeVideoControlWorker implements Runnable{
         if (this.outBuffers.containsKey(consumer) == false){
             this.streamBuffers.put(consumer,new byte[0]);
             this.streamBuffers.removeBoundedBuffer(consumer);
-            System.out.println("NodeVideoControlWorker stop client stream: " + video + " :: " + consumer);
+            System.out.println("NodeVideoControlWorker stop client stream: " + video + " -> " + consumer);
         }
 
         System.out.println(this.videoConsumers);
@@ -116,7 +116,7 @@ public class NodeVideoControlWorker implements Runnable{
             // esperatar os dados na stream do cliente
             else this.streamBuffers.put(consumer,videoControlPacket.getData());
 
-            System.out.println("NodeVideoControlWorker send video packet: " + video + " -> "+ consumer);
+            System.out.println("NodeVideoControlWorker send VIDEO REPLY: " + video + " -> "+ consumer);
         }
     }
 
@@ -125,7 +125,7 @@ public class NodeVideoControlWorker implements Runnable{
 
         String consumer = connectionStatePacket.getSenderIP();
 
-        System.out.println("NodeVideoControlWorker receiver CONNECTION LOST: " + consumer);
+        System.out.println("NodeVideoControlWorker receive CONNECTION LOST: " + consumer);
 
         for (String video : this.videoConsumers.getVideos()){
 

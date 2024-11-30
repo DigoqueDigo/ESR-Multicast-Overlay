@@ -17,8 +17,6 @@ public class NodeZombieTimer extends TimerTask{
 
 
     public void run(){
-        System.out.println("NodeZombieTimer repeat execution");
         this.videoProviders.deleteZombies();
-        System.out.println(this.videoProviders);
     }
 }

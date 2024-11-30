@@ -8,15 +8,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
+import struct.VideoProviders;
+import utils.PrettyPrint;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPFloodControlPacket;
 import packet.tcp.TCPGrandfatherControlPacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TCP_TYPE;
 import packet.tcp.TCPGrandfatherControlPacket.GRANDFATHER_PROTOCOL;
-import struct.BoundedBuffer;
-import struct.MapBoundedBuffer;
-import struct.VideoProviders;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 
 
@@ -59,16 +60,20 @@ public class NodeFloodControlWorker implements Runnable{
             Long serverTimeStamp = tcpFloodPacket.getTimestamp();
             long delay = System.currentTimeMillis() - serverTimeStamp;
 
+            System.out.println("NodeFloodControlWorker receive FLOOD: " + this.signature + " <- " + sender);
+
             // adiciono o nodo como provider se for o primeiro pacote que recebo dele
             String identifier = sender + serverTimeStamp.toString();
 
             if (this.history.contains(identifier) == false){
+
                 this.history.add(identifier);
-                videos.stream().forEach(video -> {
+
+                for (String video : videos){
                     this.videoProviders.addProvider(video,sender,delay);    
                     this.blackList.putIfAbsent(video,new HashSet<>());
                     this.grandParentsVideoProviders.putIfAbsent(video,new HashSet<>());
-                });
+                }
             }
 
             // adicionar a minha assinatura ao pacote de control flood
@@ -78,15 +83,16 @@ public class NodeFloodControlWorker implements Runnable{
             for (String neighbour : this.outBuffers.getKeys()){
                 if (neighbour.equals(sender) == false){
                     this.outBuffers.put(neighbour,tcpFloodPacket);
-                    System.out.println("NodeFloodControlWorker send flood: " + this.signature + " -> " + neighbour);
+                    System.out.println("NodeFloodControlWorker send FLOOD: " + this.signature + " -> " + neighbour);
                 }
             }
         }
 
         System.out.println(this.videoProviders);
-        System.out.println("GRANDPARENTS: " + this.grandParentsVideoProviders);
-        System.out.println("BLACKLIST: " + this.blackList);
+        System.out.println(PrettyPrint.toString(this.grandParentsVideoProviders,"Video","Grandfather"));
+        System.out.println(PrettyPrint.toString(this.blackList,"Video","Black"));
     }
+
 
     private void handleGrandFatherRequest(TCPGrandfatherControlPacket tcpGrandfatherPacket){
 
@@ -103,8 +109,8 @@ public class NodeFloodControlWorker implements Runnable{
 
         this.outBuffers.put(sender,reply);
 
-        System.out.println("NodeFloodControlWorker (grandfather request) receive grandfather request: " + this.signature + " <- " + sender);
-        System.out.println("NodeFloodControlWorker (grandfather request) send grandfather reply: " + this.signature + " -> " + sender);
+        System.out.println("NodeFloodControlWorker receive GRANDFATHER REQUEST: " + this.signature + " <- " + sender + " (" + video + ")");
+        System.out.println("NodeFloodControlWorker send GRANDFATHER REPLY: " + this.signature + " -> " + sender  + " (" + video + ")");
     }
 
 
@@ -116,7 +122,7 @@ public class NodeFloodControlWorker implements Runnable{
 
         // atualizar os avos do video
         this.grandParentsVideoProviders.put(video,providers);
-        System.out.println("NodeFloodControlWorker (grandfather reply) receive grandFather reply: " + this.signature + " <- " + sender);
+        System.out.println("NodeFloodControlWorker receive GRANDFATHER REPLY: " + this.signature + " <- " + sender  + " (" + video + ")");
     }
 
 
@@ -130,7 +136,7 @@ public class NodeFloodControlWorker implements Runnable{
         this.videoProviders.removeProvider(neighbour);
         this.outBuffers.removeBoundedBuffer(neighbour);
 
-        System.out.println("NodeFloodControlWorker (connection lost) remove neighbour: " + neighbour);
+        System.out.println("NodeFloodControlWorker receive CONNECTION LOST: " + neighbour);
 
         // para cada video tenho de verificar se fiquei sem providers
         for (String video : this.videoProviders.getVideos()){
@@ -145,7 +151,7 @@ public class NodeFloodControlWorker implements Runnable{
 
                 for (String son : this.outBuffers.getKeys()){
                     this.outBuffers.put(son,info);
-                    System.out.println("NodeFloodControlWorker (connection lost) send grandfather reply: " + this.signature + " -> " + son + " (" + video + ")");
+                    System.out.println("NodeFloodControlWorker send GRANDFATHER REPLY: " + this.signature + " -> " + son + " (" + video + ")");
                 }
 
                 // entrar em contacto com os meus avos
@@ -183,11 +189,10 @@ public class NodeFloodControlWorker implements Runnable{
                                 new TCPGrandfatherControlPacket(GRANDFATHER_PROTOCOL.GRANDFATHER_REQUEST,video);
 
                             this.blackList.get(video).add(provider);
-                            System.out.println("NodeFloodControlWorker (trigger) add blacklist: " + video + " :: " + provider);
-
                             this.outBuffers.put(provider,requestGrandParent);
-                            System.out.println("NodeFloodControlWorker (trigger) send grandfather request: " + this.signature + " -> " + provider);
-                            System.out.println(requestGrandParent);
+
+                            System.out.println("NodeFloodControlWorker add BLACK: " + video + " :: " + provider);
+                            System.out.println("NodeFloodControlWorker send GRANDFATHER REQUEST: " + this.signature + " -> " + provider + " (" + video + ")");
                         }
                     }
                 }

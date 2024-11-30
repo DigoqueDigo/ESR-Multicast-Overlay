@@ -31,8 +31,6 @@ public class NodeSwitchTimer extends TimerTask{
 
         try{
 
-            System.out.println("NodeSwitchTimer repeat execution");
-
             this.videoCurrentProviders.lock();
             Set<String> videos = this.videoCurrentProviders.keySet();
 
@@ -55,8 +53,9 @@ public class NodeSwitchTimer extends TimerTask{
                         this.outBuffers.put(bestProvider,videoRequestPacket);
                         this.videoCurrentProviders.put(video,bestProvider);
 
+                        System.out.println("NodeSwitchTimer send VIDEO CANCEL: " + video + " -> " + currentProvider);
+                        System.out.println("NodeSwitchTimer send VIDEO REQUEST: " + video + " -> " + bestProvider);
                         System.out.println(this.videoCurrentProviders);
-                        System.out.println("NodeSwitchTimer replace: " + currentProvider + " -> " + bestProvider);
                     }
                 }
             }

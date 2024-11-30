@@ -28,15 +28,13 @@ public class ServerFloodTimer extends TimerTask{
 
     public void run(){
 
-        System.out.println("ServerFloodTimer repeat execution");
-
         List<String> videos = IO.listFiles(this.videoFolder);
         TCPFloodControlPacket tcpFloodPacket = new TCPFloodControlPacket(this.serverName,videos);
         tcpFloodPacket.addSignature(this.signature);
 
         for (String neighbour : this.outBuffers.getKeys()){
             this.outBuffers.put(neighbour,tcpFloodPacket);
-            System.out.println("ServerFloodTimer send: " + this.signature + " -> " + neighbour);
+            System.out.println("ServerFloodTimer send FLOOD: " + this.signature + " -> " + neighbour);
         }
     }
 }

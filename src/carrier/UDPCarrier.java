@@ -206,7 +206,7 @@ public class UDPCarrier{
                     this.socketAddress = receivePacket.getSocketAddress();
                 }
 
-                if (udpAckPacket != null && receiveUDPPacket.getID() == udpResultPacket.getID()){
+                if (udpResultPacket != null && receiveUDPPacket.getID() == udpResultPacket.getID()){
                     ackPacket.setData(this.serialize(udpAckPacket));
                     ackPacket.setSocketAddress(this.socketAddress);
                     this.socket.send(ackPacket);

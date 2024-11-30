@@ -1,7 +1,6 @@
 package bootstrapper;
 import java.io.IOException;
 import java.net.Socket;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import carrier.TCPCarrier;
@@ -29,11 +28,13 @@ public class BootstrapperWorker implements Runnable{
         try{
             JSONObject content;
             TCPBootstrapperPacket tcpBootstrapperPacket = (TCPBootstrapperPacket) this.tcpCarrier.receive();
-            
-            try {
-                content = this.jsonObject.getJSONObject(tcpBootstrapperPacket.getNode());
+
+            try{
+                String nodeName = tcpBootstrapperPacket.getNode();
+                content = this.jsonObject.getJSONObject(nodeName);
             }
-            catch (JSONException e) {
+
+            catch (JSONException e){
                 content = null;
             }
 
@@ -41,7 +42,7 @@ public class BootstrapperWorker implements Runnable{
             this.tcpCarrier.send(tcpBootstrapperPacket);
             this.socket.close();
 
-            System.out.println("BoostrapperWorker received message from " + tcpBootstrapperPacket.getNode());
+            System.out.println("BoostrapperWorker receive message: " + tcpBootstrapperPacket.getNode());
         }
 
         catch (Exception e){

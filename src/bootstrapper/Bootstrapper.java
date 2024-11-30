@@ -4,8 +4,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import org.json.JSONObject;
 
 
@@ -20,18 +18,11 @@ public class Bootstrapper{
 
         Socket socket;
         ServerSocket serverSocket = new ServerSocket(PORT);
-        List<Thread> workers = new ArrayList<>();
 
         System.out.println("Bootstrapper waiting for connection");
 
         while ((socket = serverSocket.accept()) != null){
-            Thread worker = new Thread(new BootstrapperWorker(socket,jsonObject));
-            workers.add(worker);
-            worker.start();
-        }
-
-        for (Thread worker : workers){
-            worker.join();
+            new Thread(new BootstrapperWorker(socket,jsonObject)).start();
         }
 
         serverSocket.close();

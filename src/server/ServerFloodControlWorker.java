@@ -1,11 +1,11 @@
 package server;
 import java.util.HashMap;
 import java.util.function.Consumer;
+import struct.BoundedBuffer;
+import struct.MapBoundedBuffer;
 import packet.tcp.TCPConnectionStatePacket;
 import packet.tcp.TCPPacket;
 import packet.tcp.TCPPacket.TCP_TYPE;
-import struct.BoundedBuffer;
-import struct.MapBoundedBuffer;
 import packet.tcp.TCPConnectionStatePacket.CONNECTION_STATE_PROTOCOL;
 
 
@@ -26,6 +26,7 @@ public class ServerFloodControlWorker implements Runnable{
         String neighbour = connectionStatePacket.getSenderIP();
         this.outBuffers.put(neighbour,connectionStatePacket);
         this.outBuffers.removeBoundedBuffer(neighbour);
+        System.out.println("ServerFloodControlWorker receive CONNECTION LOST: " + neighbour);
     }
 
 
@@ -46,8 +47,6 @@ public class ServerFloodControlWorker implements Runnable{
             if (handlers.containsKey(tcpPacket.getType())){
                 handlers.get(tcpPacket.getType()).accept(tcpPacket);
             }
-
-            else System.out.println("ServerFloodControlWorker unknown packet: " + tcpPacket);
         }
     }
 }
