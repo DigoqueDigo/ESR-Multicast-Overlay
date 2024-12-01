@@ -80,7 +80,7 @@ public class VideoCurrentProviders{
 
         try{
             this.lock.lock();
-            return this.currentProviders.keySet();
+            return new HashSet<>(this.currentProviders.keySet());
         }
 
         catch (Exception e){
@@ -91,16 +91,6 @@ public class VideoCurrentProviders{
         finally{
             this.lock.unlock();
         }
-    }
-
-
-    public void lock(){
-        this.lock.lock();
-    }
-
-
-    public void unlock(){
-        this.lock.unlock();
     }
 
 

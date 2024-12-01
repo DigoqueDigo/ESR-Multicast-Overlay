@@ -38,14 +38,14 @@ public class VideoConsumers{
     public Set<String> getConsumers(String video){
         Set<String> consumers = new HashSet<>();
         if (this.consumers.containsKey(video)){
-            consumers = this.consumers.get(video);
+            consumers.addAll(this.consumers.get(video));
         }
         return consumers;
     }
 
 
     public Set<String> getVideos(){
-        return this.consumers.keySet();
+        return new HashSet<>(this.consumers.keySet());
     }
 
 

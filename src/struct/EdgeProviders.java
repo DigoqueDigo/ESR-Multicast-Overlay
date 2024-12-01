@@ -50,7 +50,7 @@ public class EdgeProviders{
 
         try{
             this.lock.lock();
-            return this.edgeTable.rowKeySet();
+            return new HashSet<>(this.edgeTable.rowKeySet());
         }
 
         catch (Exception e){

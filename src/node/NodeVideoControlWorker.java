@@ -124,10 +124,11 @@ public class NodeVideoControlWorker implements Runnable{
     private void handleConnectionLost(TCPConnectionStatePacket connectionStatePacket){
 
         String consumer = connectionStatePacket.getSenderIP();
+        Set<String> videos = this.videoConsumers.getVideos();
 
         System.out.println("NodeVideoControlWorker receive CONNECTION LOST: " + consumer);
 
-        for (String video : this.videoConsumers.getVideos()){
+        for (String video : videos){
 
             this.videoConsumers.remove(video,consumer);
 

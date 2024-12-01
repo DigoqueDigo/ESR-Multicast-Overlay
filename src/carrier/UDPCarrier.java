@@ -135,7 +135,7 @@ public class UDPCarrier{
         boolean condition = true;
         byte[] data = this.serialize(udpPacket);
 
-        System.out.println("UDPCarrier send ID: " + udpPacket.getID());
+    //    System.out.println("UDPCarrier send ID: " + udpPacket.getID());
 
         DatagramPacket sendPacket = new DatagramPacket(data, data.length, this.socketAddress);
         DatagramPacket receivePacket = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
@@ -145,7 +145,7 @@ public class UDPCarrier{
 
             attempts++;
             this.socket.send(sendPacket);
-            System.out.println("UDPCarrier send packet: " + attempts);
+        //    System.out.println("UDPCarrier send packet: " + attempts);
 
             try{
 
@@ -155,7 +155,7 @@ public class UDPCarrier{
 
                 if (receiveUDPPacket.getType() == UDP_TYPE.ACK && receiveUDPPacket.getID() == udpPacket.getID()){
                     condition = false;
-                    System.out.println("UDPCarrier: receive ACK");
+                //    System.out.println("UDPCarrier: receive ACK");
                 }
             }
 
@@ -193,7 +193,7 @@ public class UDPCarrier{
                 if (udpResultPacket == null && receiveUDPPacket.getType() != UDP_TYPE.ACK){
 
                     udpResultPacket = receiveUDPPacket;
-                    System.out.println("UDPCarrier receive ID: " + udpResultPacket.getID());
+                //    System.out.println("UDPCarrier receive ID: " + udpResultPacket.getID());
 
                     udpResultPacket.setSenderIP(receivePacket.getAddress().getHostAddress());
                     udpResultPacket.setSenderPort(receivePacket.getPort());
@@ -211,7 +211,7 @@ public class UDPCarrier{
                     ackPacket.setSocketAddress(this.socketAddress);
                     this.socket.send(ackPacket);
                     timer = System.currentTimeMillis();
-                    System.out.println("UDPCarrrier: send ACK");
+                //    System.out.println("UDPCarrrier: send ACK");
                 }
 
                 else if (System.currentTimeMillis() - timer > RECEIVE_TIMEOUT){

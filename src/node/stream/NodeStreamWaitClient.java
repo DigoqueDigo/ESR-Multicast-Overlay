@@ -81,7 +81,7 @@ public class NodeStreamWaitClient implements Runnable{
             UDPCarrier udpCarrier = new UDPCarrier();
             InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
 
-            System.out.println("NodeStreamWaitClient send: " + response);
+            System.out.println("NodeStreamWaitClient send VIDEO LIST: " + clientIP);
 
             udpCarrier.connect(socketAddress);
             udpCarrier.send(response);
@@ -106,7 +106,7 @@ public class NodeStreamWaitClient implements Runnable{
             InetSocketAddress socketAddress = new InetSocketAddress(clientIP,clientPort);
             UDPLinkPacket response = new UDPLinkPacket();
 
-            System.out.println("NodeStreamWaitClient send: " + response);
+            System.out.println("NodeStreamWaitClient send LINK: " + clientIP);
 
             udpCarrier.connect(socketAddress);
             udpCarrier.send(response);
@@ -138,8 +138,6 @@ public class NodeStreamWaitClient implements Runnable{
             while (udpCarrier.isClosed() == false){
 
                 if ((udpPacket = udpCarrier.receive()) != null){
-
-                    System.out.println("NodeStreamWaitClient receive: " + udpPacket);
 
                     if (handlers.containsKey(udpPacket.getType())){
                         handlers.get(udpPacket.getType()).accept(udpPacket);

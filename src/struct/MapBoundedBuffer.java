@@ -1,4 +1,5 @@
 package struct;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,7 +26,7 @@ public class MapBoundedBuffer <K,V>{
 
 
     public Set<K> getKeys(){
-        return this.boundedBuffers.keySet();
+        return new HashSet<>(this.boundedBuffers.keySet());
     }
 
 

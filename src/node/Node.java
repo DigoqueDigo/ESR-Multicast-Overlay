@@ -33,7 +33,6 @@ public class Node {
             .toList().stream().map(Object::toString).collect(Collectors.toSet());
 
         boolean isEdge = bootstrapperInfo.getBoolean("edge");
-        System.out.println("EDGE STATUS: " + isEdge);
 
         BoundedBuffer<TCPPacket> inBuffer = new BoundedBuffer<>(10);
         BoundedBuffer<TCPPacket> controlBuffer = new BoundedBuffer<>(10);

@@ -95,7 +95,7 @@ public class VideoProviders{
 
         try{
             this.lock.lock();
-            return this.providers.keySet();
+            return new HashSet<>(this.providers.keySet());
         }
 
         catch (Exception e){

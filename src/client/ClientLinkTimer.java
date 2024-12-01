@@ -34,7 +34,6 @@ public class ClientLinkTimer extends TimerTask{
 
                 try{
 
-                    System.out.println("Try contact: " + edgeNode);
                     UDPLinkPacket reply = null;
                     UDPLinkPacket request = new UDPLinkPacket();
                     InetSocketAddress socketAddress = new InetSocketAddress(edgeNode,NodeStreamWaitClient.CLIENT_ESTABLISH_CONNECTION_PORT);
@@ -52,15 +51,12 @@ public class ClientLinkTimer extends TimerTask{
 
                     this.edgeProviders.addLoss(edgeNode,loss);
                     this.edgeProviders.addRTT(edgeNode,rtt);
-
-                    System.out.println(edgeNode);
                 }
 
                 catch (SocketException e){
                     udpCarrier.disconnect();
                     this.edgeProviders.addLoss(edgeNode,1f);
                     this.edgeProviders.addRTT(edgeNode,Float.POSITIVE_INFINITY);
-                    System.out.println(edgeNode);
                 }
             }
 
