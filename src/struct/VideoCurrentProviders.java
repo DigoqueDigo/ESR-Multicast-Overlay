@@ -94,6 +94,16 @@ public class VideoCurrentProviders{
     }
 
 
+    public void lock(){
+        this.lock.lock();
+    }
+
+
+    public void unlock(){
+        this.lock.unlock();
+    }
+
+
     public String toString(){
 
         try{

@@ -31,6 +31,7 @@ public class NodeSwitchTimer extends TimerTask{
 
         try{
 
+            this.videoCurrentProviders.lock();
             Set<String> videos = this.videoCurrentProviders.keySet();
 
             for (String video : videos){
@@ -62,6 +63,10 @@ public class NodeSwitchTimer extends TimerTask{
 
         catch (Exception e){
             e.printStackTrace();
+        }
+
+        finally{
+            this.videoCurrentProviders.unlock();
         }
     }
 }
